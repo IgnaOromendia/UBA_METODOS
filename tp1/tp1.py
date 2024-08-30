@@ -3,7 +3,7 @@ import numpy as np
 
 def resolver_sistema_triangular_superior(A, b):
     n = A.shape[0]
-    x = np.zeros(n)
+    x = np.zeros(n, dtype=np.float64)
 
     for i in range(n - 1, -1, -1):
         suma = 0
@@ -12,23 +12,24 @@ def resolver_sistema_triangular_superior(A, b):
 
     return x    
 
-def eliminacion_gausseana_naive(T, b): 
+def eliminacion_gausseana_naive(T, x): 
     m = 0
     n = T.shape[0]
-    A = T.copy()
+    A0 = T.copy()
+    A1 = T.copy()
+    b = x.copy()
     
-    for i in range(0,n-1):
+    for i in range(0,n):
         for j in range(i+1, n):
-            m = A[j][i]/A[i][i]       # coeficiente
+            m = A0[j][i]/A0[i][i]                 # coeficiente
             b[j] = b[j] - (m * b[i])            # aplicar a b
             for k in range(i, n):
-                resta = A[j][k] - (m * A[i][k])
-                A[j][k] = resta
+                A1[j][k] = A0[j][k] - (m * A0[i][k])
+        A0 = A1.copy()
             
-    print(A)
-    
-    x = resolver_sistema_triangular_superior(A,b)
+    # print(A1)
 
+    x = resolver_sistema_triangular_superior(A1,b)
     return x
 
 def eliminacion_gausseana_tridiagonal(T,b):
@@ -72,8 +73,7 @@ def eliminacion_gausseana_tridiagonal(T,b):
     
     
 class TestEliminacionGausseana(unittest.TestCase):
-    def test_resolver_sistema(self):
-        
+    def test_01_resolver_sistema_clase(self):
         A = np.array([  
                 [2,1,-1,3],
                 [-2,0,0,0],
@@ -87,30 +87,26 @@ class TestEliminacionGausseana(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(resultado_x, esperado_x, decimal=5)
 
+    def test_02_resolver_sistema_internet(self):
+        A = np.array([[1,2,1],
+                [1,0,1],
+                [0,1,2]], dtype=np.float64)
+        
+        b = np.array([0,2,1]) 
+
+        x = eliminacion_gausseana_naive(A,b)
+
+        np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
+
+
 
 if __name__ == "__main__":
-    A = np.array([[2,1,-1,3],
-                [-2,0,0,0],
-                [4,1,-2,4],
-                [-6,-1,2,-3]], dtype=np.float64)
+    unittest.main() 
 
-
-
-    A_zero = np.array([ [0,1,-1,3],
-                        [-2,0,0,0],
-                        [4,1,-2,4],
-                        [-6,-1,2,-3]])
-    b = np.array([13,-2,24,-10])
+    # m = np.array([  [ 2, -1,  0,  0],
+    #                 [-1,  3, -1,  0],
+    #                 [ 0, -1,  3, -1],
+    #                 [ 0,  0, -1,  2]], dtype=np.float64)
     
-    # naive_x = eliminacion_gausseana_naive(A,b)
-    # zerp_x = eliminacion_gausseana_naive(A_zero,b)
-    #unittest.main() 
-    # assert(np.allclose(np.dot(A, naive_x),b))
-
-    m = np.array([  [ 2, -1,  0,  0],
-                    [-1,  3, -1,  0],
-                    [ 0, -1,  3, -1],
-                    [ 0,  0, -1,  2]], dtype=np.float64)
-    
-    eliminacion_gausseana_tridiagonal(m, b)
+    # eliminacion_gausseana_tridiagonal(m, b)
 
