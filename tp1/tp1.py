@@ -27,10 +27,7 @@ def eliminacion_gausseana_naive(T, x):
                 A1[j][k] = A0[j][k] - (m * A0[i][k])
         A0 = A1.copy()
             
-    # print(A1)
-
-    x = resolver_sistema_triangular_superior(A1,b)
-    return x
+    return resolver_sistema_triangular_superior(A1,b)
 
 def eliminacion_gausseana_tridiagonal(T,b):
     n = T.shape[0]
@@ -51,7 +48,7 @@ def eliminacion_gausseana_tridiagonal(T,b):
     # Resolvemos
     for i in range(1, n):
         coeficiente = A[i] / B[i-1]
-        A[i] = A[i] - coeficiente * B[i-1]     # A_i - A_i / B_i-1 * B_i-1    
+        A[i] = A[i] - coeficiente * B[i-1]  # A_i - A_i / B_i-1 * B_i-1    
         B[i] = B[i] - coeficiente * C[i-1]  # B_i - A_i / B_i-1 * C_i-1
     
     T2 = T.copy()
@@ -60,16 +57,8 @@ def eliminacion_gausseana_tridiagonal(T,b):
         T[i][i] = B[i]
         if (i >= 1): T[i][i-1] = A[i] 
         if (i < n-1): T[i][i+1] = C[i]
-    
-    x = resolver_sistema_triangular_superior(T,b)
 
-    print("X EG naive: \n" + str(eliminacion_gausseana_naive(T2, b)))
-    # print("T original: \n" + str(T2))
-    # print("T EG: \n" + str(T))
-    # print("X nuestro: " + str(x))
-    print("X numpy: " + str([197/21, 121/21, 208/21, -1/21]))
-
-    assert(np.allclose(np.dot(T2,x), b))
+    return resolver_sistema_triangular_superior(T,b)
     
     
 class TestEliminacionGausseana(unittest.TestCase):
@@ -98,15 +87,22 @@ class TestEliminacionGausseana(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
 
+    def test_03_resolver_tridiagonal(self):
+        A = np.array([  [ 2, -1,  0,  0],
+                    [-1,  3, -1,  0],
+                    [ 0, -1,  3, -1],
+                    [ 0,  0, -1,  2]], dtype=np.float64)
+    
+        b = np.array([1, 4, 7, 6])
+        
+        x = eliminacion_gausseana_tridiagonal(A, b)
+        
+        np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
+
 
 
 if __name__ == "__main__":
     unittest.main() 
 
-    # m = np.array([  [ 2, -1,  0,  0],
-    #                 [-1,  3, -1,  0],
-    #                 [ 0, -1,  3, -1],
-    #                 [ 0,  0, -1,  2]], dtype=np.float64)
     
-    # eliminacion_gausseana_tridiagonal(m, b)
 
