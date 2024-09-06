@@ -1,11 +1,10 @@
 import unittest
 import numpy as np
-from copy import deepcopy as dc
-import copy
+
 
 def resolver_sistema_triangular_superior(A, b):
-    n = len(A[0])
-    x = [0] * n
+    n = A.shape[0]
+    x = np.zeros(n, dtype=np.float64)
 
     for i in range(n - 1, -1, -1):
         suma = 0
@@ -16,10 +15,10 @@ def resolver_sistema_triangular_superior(A, b):
 
 def eliminacion_gausseana_naive(T, x): 
     m = 0
-    n = len(T[0])
-    A0 = dc(T)
-    A1 = dc(T)
-    b = dc(x)
+    n = T.shape[0]
+    A0 = T.copy()
+    A1 = T.copy()
+    b = x.copy()
     
     for i in range(0,n):
         for j in range(i+1, n):
@@ -27,12 +26,12 @@ def eliminacion_gausseana_naive(T, x):
             b[j] = b[j] - (m * b[i])            # aplicar a b
             for k in range(i, n):
                 A1[j][k] = A0[j][k] - (m * A0[i][k])
-        A0 = dc(A1)
+        A0 = A1.copy()
             
     return resolver_sistema_triangular_superior(A1,b)
 
 def permutar_filas(A, i, j):
-    copia = dc(A[i])
+    copia = A[i].copy()
     A[i] = A[j]
     A[j] = copia
     
@@ -51,10 +50,10 @@ def encontrar_pivote(A, i):
             
 def eliminacion_gausseana_pivoteo(T, x): 
     m = 0
-    n = len(T[0])
-    A0 = dc(T)
-    A1 = dc(T)
-    b = dc(x)
+    n = T.shape[0]
+    A0 = T.copy()
+    A1 = T.copy()
+    b = x.copy()
 
     for i in range(0,n):
 
@@ -68,16 +67,17 @@ def eliminacion_gausseana_pivoteo(T, x):
             b[j] = b[j] - (m * b[i])            # aplicar a b
             for k in range(i, n):
                 A1[j][k] = A0[j][k] - (m * A0[i][k])
-        A0 = dc(A1)
+        A0 = A1.copy()
+        
 
     return resolver_sistema_triangular_superior(A1,b)
 
 def eliminacion_gausseana_tridiagonal(T,b):
-    n = len(T[0])
+    n = T.shape[0]
     
-    A = [0] * n
-    B = [0] * n
-    C = [0] * n
+    A = np.zeros(n, dtype=np.float64)
+    B = np.zeros(n, dtype=np.float64)
+    C = np.zeros(n, dtype=np.float64)
 
     # TODO: PREGUNTAR DIFERENCIA ENTRE 3.2 Y 3.3 - PREGUNTAR INFORME DE 1 - EXPERIMENTACION
     
@@ -104,59 +104,60 @@ def eliminacion_gausseana_tridiagonal(T,b):
     
 class TestEliminacionGausseana(unittest.TestCase):
     def test_01_resolver_sistema_clase(self):
-        A = [
+        A = np.array([
             [2,1,-1,3],
             [-2,0,0,0],
             [4,1,-2,4],
             [-6,-1,2,-3]
-            ]
+            ], dtype=np.float64)
 
-        b = [13, -2, 24, -10]
-        esperado_x = [1, -30, 7, 16]
+        b = np.array([13, -2, 24, -10], dtype=np.float64)
+        esperado_x = np.array([1, -30, 7, 16], dtype=np.float64)
 
         resultado_x = eliminacion_gausseana_naive(A, b)
 
         np.testing.assert_array_almost_equal(resultado_x, esperado_x, decimal=10)
 
     def test_02_resolver_sistema_internet(self):
-        A = [
+        A = np.array([
             [1,2,1],
             [1,0,1],
             [0,1,2]
-            ]
+            ], dtype=np.float64)
 
 
-        b = [0,2,1]
+        b = np.array([0,2,1], dtype=np.float64)
         
-        x = eliminacion_gausseana_naive(dc(A),b)
+        x = eliminacion_gausseana_naive(A.copy(),b)
         
 
 
         np.testing.assert_array_almost_equal(np.dot(np.array(A),np.array(x)), np.array(b), decimal=5)
 
     def test_03_resolver_tridiagonal(self):
-        A = [
+        A = np.array([
             [ 2, -1,  0,  0],
             [-1,  3, -1,  0],
             [ 0, -1,  3, -1],
             [ 0,  0, -1,  2]
-            ]
+            ], dtype=np.float64)
     
-        b = [1, 4, 7, 6]
+        b = np.array([1, 4, 7, 6], dtype=np.float64)
         
         x = eliminacion_gausseana_tridiagonal(A, b)
         
         np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
 
     def test_04_resolver_sistema_con_pivoteo(self):
-        A = [
+        A = np.array([
             [2, 1, 1],
             [4, 3, 1],
             [2, 3, 4]
-        ]
+        ], dtype=np.float64)
 
-        b = [3, 7, 10]
+        b = np.array([3, 7, 10], dtype=np.float64)
         x =  eliminacion_gausseana_pivoteo(A, b)
+        
         
         np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
 
