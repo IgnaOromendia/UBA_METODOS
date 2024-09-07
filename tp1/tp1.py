@@ -1,6 +1,8 @@
 import unittest
 import numpy as np
 
+def multiplicar_matriz_vector(A,x):
+    return np.dot(A,x)
 
 def resolver_sistema_triangular_superior(A, b):
     n = A.shape[0]
@@ -71,6 +73,23 @@ def eliminacion_gausseana_pivoteo(T, x):
         
 
     return resolver_sistema_triangular_superior(A1,b)
+
+def factorizar_LU(T):
+    m = 0
+    n = T.shape[0]
+    A0 = T.copy()
+    A1 = T.copy()
+    L = np.eye(n, dtype=np.float64)
+    
+    for i in range(0,n):
+        for j in range(i+1, n):
+            m = A0[j,i]/A0[i,i]
+            L[j,i] = m
+            for k in range(i, n):
+                A1[j,k] = A0[j,k] - (m * A0[i,k])
+        A0 = A1.copy()
+    
+    return L, A1
 
 def eliminacion_gausseana_tridiagonal(T,b):
     n = T.shape[0]
@@ -161,6 +180,33 @@ class TestEliminacionGausseana(unittest.TestCase):
         
         np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
 
+    def test_05_factorizar_LU(self):
+        A = np.array([
+            [2,1,-1,3],
+            [-2,0,0,0],
+            [4,1,-2,4],
+            [-6,-1,2,-3]
+            ], dtype=np.float64)
+    
+        b = np.array([1, 4, 7, 6], dtype=np.float64)
+        
+        L, U = factorizar_LU(A)
+
+        np.testing.assert_array_almost_equal(np.dot(L,U), A, decimal=5)
+
+    def test_06_eliminacion_gausseana_LU(self):
+        A = np.array([
+            [2,1,-1,3],
+            [-2,0,0,0],
+            [4,1,-2,4],
+            [-6,-1,2,-3]
+            ], dtype=np.float64)
+    
+        b = np.array([1, 4, 7, 6], dtype=np.float64)
+        
+        L, U = factorizar_LU(A)
+
+        # COMPLETAR
 
 if __name__ == "__main__":
     unittest.main()
