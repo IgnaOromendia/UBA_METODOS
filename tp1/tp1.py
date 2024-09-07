@@ -38,15 +38,15 @@ def permutar_filas(A, i, j):
     A[j] = copia
     
 def encontrar_pivote(A, i):
-    max = abs(A[i][i])
+    max = abs(A[i,i])
     fila = i
     # Buscamos la fila con el numero mas grande dentro de la columna i
     for k in range(i, len(A)):
         # Nos quedamos con el numero de la fila para luego permutar
         # Updateamos el nuevo maximo
-        if abs(A[k][i]) > max:
+        if abs(A[k,i]) > max:
             fila = k
-            max = A[k][i]
+            max = abs(A[k,i])
     # Devolvemos la fila
     return fila
             
