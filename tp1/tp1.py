@@ -50,29 +50,27 @@ def encontrar_pivote(A, i):
     # Devolvemos la fila
     return fila
             
-def eliminacion_gausseana_pivoteo(T, x): 
+def eliminacion_gausseana_pivoteo(A, b): 
     m = 0
-    n = T.shape[0]
-    A0 = T.copy()
-    A1 = T.copy()
-    b = x.copy()
+    n = A.shape[0]
+    A0 = A.copy()
+    A1 = A.copy()
+    b0 = b.copy()
 
     for i in range(0,n):
-
         fila = encontrar_pivote(A0,i)  
         permutar_filas(A0, i, fila)
         permutar_filas(A1, i, fila)
-        permutar_filas(b, i, fila)
+        permutar_filas(b0, i, fila)
         for j in range(i+1, n):
-            # Aca va el pivoteo
             m = A0[j][i]/A0[i][i]                 # coeficiente
-            b[j] = b[j] - (m * b[i])            # aplicar a b
+            b0[j] = b0[j] - (m * b0[i])            # aplicar a b
             for k in range(i, n):
                 A1[j][k] = A0[j][k] - (m * A0[i][k])
         A0 = A1.copy()
         
 
-    return backward_substitution(A1,b)
+    return backward_substitution(A1,b0)
 
 def factorizar_LU(T):
     m = 0
