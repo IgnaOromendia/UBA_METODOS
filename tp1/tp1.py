@@ -4,7 +4,7 @@ import numpy as np
 def multiplicar_matriz_vector(A,x):
     return np.dot(A,x)
 
-def resolver_sistema_triangular_superior(A, b):
+def backward_substitution(A, b):
     n = A.shape[0]
     x = np.zeros(n, dtype=np.float64)
 
@@ -15,22 +15,22 @@ def resolver_sistema_triangular_superior(A, b):
 
     return x     
 
-def eliminacion_gausseana_naive(T, x): 
+def eliminacion_gausseana_naive(A, b): 
     m = 0
-    n = T.shape[0]
-    A0 = T.copy()
-    A1 = T.copy()
-    b = x.copy()
+    n = A.shape[0]
+    A0 = A.copy()
+    A1 = A.copy()
+    b0 = b.copy()
     
     for i in range(0,n):
         for j in range(i+1, n):
-            m = A0[j][i]/A0[i][i]                 # coeficiente
-            b[j] = b[j] - (m * b[i])            # aplicar a b
+            m = A0[j,i]/A0[i,i]                 # coeficiente
+            b0[j] = b0[j] - (m * b0[i])            # aplicar a b
             for k in range(i, n):
-                A1[j][k] = A0[j][k] - (m * A0[i][k])
+                A1[j,k] = A0[j,k] - (m * A0[i,k])
         A0 = A1.copy()
             
-    return resolver_sistema_triangular_superior(A1,b)
+    return backward_substitution(A1,b0)
 
 def permutar_filas(A, i, j):
     copia = A[i].copy()
@@ -72,7 +72,7 @@ def eliminacion_gausseana_pivoteo(T, x):
         A0 = A1.copy()
         
 
-    return resolver_sistema_triangular_superior(A1,b)
+    return backward_substitution(A1,b)
 
 def factorizar_LU(T):
     m = 0
@@ -119,7 +119,7 @@ def eliminacion_gausseana_tridiagonal(T,b):
         if (i >= 1): T[i][i-1] = A[i] 
         if (i < n-1): T[i][i+1] = C[i]
 
-    return resolver_sistema_triangular_superior(T,b)
+    return backward_substitution(T,b)
     
 class TestEliminacionGausseana(unittest.TestCase):
     def test_01_resolver_sistema_clase(self):
