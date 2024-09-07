@@ -10,8 +10,8 @@ def backward_substitution(A, b):
 
     for i in range(n - 1, -1, -1):
         suma = 0
-        for j in range(i,n): suma += A[i][j] * x[j]
-        x[i] = (b[i] - suma) / A[i][i]  
+        for j in range(i,n): suma += A[i,j] * x[j]
+        x[i] = (b[i] - suma) / A[i,i]  
 
     return x     
 
