@@ -162,7 +162,7 @@ def generar_laplaciano(n):
 
     return A
 
-def generar_u_0(n,r,m):
+def generar_u_0(n,r):
     u = np.zeros(n, dtype=np.float64)
 
     lower = n // 2 - r
@@ -173,17 +173,17 @@ def generar_u_0(n,r,m):
 
     return u
 
-def calcular_difusion(A,k,r,m):
+def calcular_difusion(A,r,m):
     n = A.shape[0]
-    u_0 = generar_u_0(n,r,m)
+    u_0 = generar_u_0(n,r)
     u_1 = np.zeros(n, dtype=np.float64)
     difusion = [u_0]
 
     L,U = factorizar_LU_tri(A.copy())
 
-    for _ in range(k):
-        y   = backward_substitution(U,u_0)
-        u_1 = backward_substitution(L, y)
+    for k in range(1,m):
+        y   = foward_substitution(L,difusion[k-1])
+        u_1 = backward_substitution(U, y)
         difusion.append(u_1)
 
     return difusion
@@ -281,24 +281,45 @@ class TestEliminacionGausseana(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5) 
 
-    def test_07_difusion(self):
-        alfa = 1
-        k = 10
-        n = 101
-        r = 10
-        m = 1000
-
-        # Matriz laplaciana
-        T = generar_laplaciano(n)
-
-        A = np.eye(n, dtype=np.float64) - alfa * T
-
-        difusiones = calcular_difusion(A.copy(),k,r,m)
+    def test_07_factorizar_LU_tri(self):
+        A = np.array([
+            [ 2, -1,  0,  0],
+            [-1,  3, -1,  0],
+            [ 0, -1,  3, -1],
+            [ 0,  0, -1,  2]
+            ], dtype=np.float64)
+    
+        b = np.array([1, 4, 7, 6], dtype=np.float64)
         
-        # El plot que queremos
-        # Y = (np.random.rand(500,50))*2-1
-        # X = np.cumsum(Y,axis=0)
-        # plt.plot(X,'k',alpha=0.3);
+        L,U = factorizar_LU_tri(A.copy())
+
+        np.testing.assert_array_almost_equal(np.dot(L,U), A, decimal=5)
+
+        y = foward_substitution(L,b)
+        x = backward_substitution(U,y)
+        
+        np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
+
+def simular_difusion(alfa, n, r, m):
+    # alfa  = multiplicador del laplaciano
+    # m     = cantidad de pasos a simular
+    # n     = tamaño del vector
+    # r     = condensación
+
+    # Matriz laplaciana
+    T = generar_laplaciano(n)
+
+    # Generamos A
+    A = np.eye(n, dtype=np.float64) - alfa * T
+
+    # Caluclamos 
+    difusiones = calcular_difusion(A.copy(),r,m)
+
+    # El plot que queremos
+    # Y = (np.random.rand(500,50))*2-1
+    X = np.cumsum(difusiones,axis=0)
+    plt.plot(X,'k',alpha=0.3);
+    plt.show()
 
 def calcular_tiempo_avr(f, l, h, s, cant):
     time_avg = 0
@@ -331,6 +352,7 @@ def calcular_tiempos_naive_vs_pivoteo(l):
     return tiempos_naive, tiempos_pivoteo
 
 if __name__ == "__main__":
+    simular_difusion(1,101,10,1000)
     # lista_size = [20,40,60,80,100,120,140,160,180,200]
     # t_n, t_p = calcular_tiempos_naive_vs_pivoteo(lista_size)
     # plt.plot(lista_size, t_n, color = 'blue',label='Eliminacion naive')
@@ -343,4 +365,4 @@ if __name__ == "__main__":
     # plt.legend()
     # plt.show()
     
-    unittest.main()
+    # unittest.main()
