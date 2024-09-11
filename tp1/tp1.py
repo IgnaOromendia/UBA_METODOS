@@ -1,5 +1,7 @@
 import unittest
 import numpy as np
+import matplotlib.pyplot as plt
+import time
 
 def multiplicar_matriz_vector(A,x):
     return np.dot(A,x)
@@ -19,7 +21,6 @@ def eliminacion_gausseana_naive(A, b):
     m = 0
     n = A.shape[0]
     A0 = A.copy()
-    A1 = A.copy()
     b0 = b.copy()
     
     for i in range(0,n):
@@ -27,10 +28,10 @@ def eliminacion_gausseana_naive(A, b):
             m = A0[j,i]/A0[i,i]                 # coeficiente
             b0[j] = b0[j] - (m * b0[i])            # aplicar a b
             for k in range(i, n):
-                A1[j,k] = A0[j,k] - (m * A0[i,k])
-        A0 = A1.copy()
+                A0[j,k] = A0[j,k] - (m * A0[i,k])
+
             
-    return backward_substitution(A1,b0)
+    return backward_substitution(A0,b0)
 
 def permutar_filas(A, i, j):
     copia = A[i].copy()
@@ -54,29 +55,26 @@ def eliminacion_gausseana_pivoteo(A, b):
     m = 0
     n = A.shape[0]
     A0 = A.copy()
-    A1 = A.copy()
     b0 = b.copy()
 
     for i in range(0,n):
         fila = encontrar_pivote(A0,i)  
         permutar_filas(A0, i, fila)
-        permutar_filas(A1, i, fila)
         permutar_filas(b0, i, fila)
         for j in range(i+1, n):
             m = A0[j][i]/A0[i][i]                 # coeficiente
             b0[j] = b0[j] - (m * b0[i])            # aplicar a b
             for k in range(i, n):
-                A1[j][k] = A0[j][k] - (m * A0[i][k])
-        A0 = A1.copy()
+                A0[j][k] = A0[j][k] - (m * A0[i][k])
+
         
 
-    return backward_substitution(A1,b0)
+    return backward_substitution(A0,b0)
 
 def factorizar_LU(T):
     m = 0
     n = T.shape[0]
     A0 = T.copy()
-    A1 = T.copy()
     L = np.eye(n, dtype=np.float64)
     
     for i in range(0,n):
@@ -84,10 +82,10 @@ def factorizar_LU(T):
             m = A0[j,i]/A0[i,i]
             L[j,i] = m
             for k in range(i, n):
-                A1[j,k] = A0[j,k] - (m * A0[i,k])
-        A0 = A1.copy()
+                A0[j,k] = A0[j,k] - (m * A0[i,k])
+
     
-    return L, A1
+    return L, A0
 
 def eliminacion_gausseana_tridiagonal(T,b):
     n = T.shape[0]
@@ -206,5 +204,47 @@ class TestEliminacionGausseana(unittest.TestCase):
 
         # COMPLETAR
 
+def calcular_tiempo_avr(f, l, h, s, cant):
+    time_avg = 0
+    for i in range(cant):
+        start_time = time.time()
+        calcular_sistema_de_n_elementos(l,h,s, f)
+        end_time = time.time() 
+        time_avg = time_avg + (end_time-start_time)
+    
+    return (time_avg/cant)
+
+def calcular_sistema_de_n_elementos(l, h, s, f):
+  np.random.seed(9)
+  A = np.random.uniform(l, h, (s,s))
+  b = np.random.uniform(l, h, s)
+  return f(A, b)
+
+def calcular_tiempos_naive_vs_pivoteo(l):
+    tiempos_pivoteo = []
+    tiempos_naive = []
+    i = 0
+    for s in l:
+        t1 =  calcular_tiempo_avr(eliminacion_gausseana_naive, 10**-3,10**3, s, 10)
+        t2 =  calcular_tiempo_avr(eliminacion_gausseana_pivoteo, 10**-3,10**3, s, 10)
+        tiempos_naive.append(t1)
+        tiempos_pivoteo.append(t2)
+        print("Tiempo nainve: ", t1, " Tiempo pivoteo: ", t2, "En el paso: ", i)
+        i = i+1 
+    
+    return tiempos_naive, tiempos_pivoteo
+
 if __name__ == "__main__":
+    lista_size = [20,40,60,80,100,120,140,160,180,200]
+    t_n, t_p = calcular_tiempos_naive_vs_pivoteo(lista_size)
+    plt.plot(lista_size, t_n, color = 'blue',label='Eliminacion naive')
+    plt.plot(lista_size, t_p, color = 'red',label='Eliminacion pivoteo')
+    plt.ylabel('Tiempo en segundos')
+    plt.xlabel('Tamaño de la matriz')
+
+    #plt.xscale("log")
+    #plt.yscale("log")
+    plt.legend()
+    plt.show()
+    #unittest.main()
     unittest.main()
