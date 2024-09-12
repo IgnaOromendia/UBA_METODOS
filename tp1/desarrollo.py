@@ -268,22 +268,8 @@ def simular_difusion(alfa, n, r, m):
     plt.plot(X,'k',alpha=0.3);
     plt.xlabel("k")
     plt.ylabel("x")
-    plt.legend()
     plt.show()
 
 if __name__ == "__main__":
-    # simular_difusion(1,101,10,1000)
-
-    verificar_implementacion_tri(101)
-
-    # lista_size = [20,40,60,80,100,120,140,160,180,200]
-    # t_n, t_p = calcular_tiempos_naive_vs_pivoteo(lista_size)
-    # plt.plot(lista_size, t_n, color = 'blue',label='Eliminacion naive')
-    # plt.plot(lista_size, t_p, color = 'red',label='Eliminacion pivoteo')
-    # plt.ylabel('Tiempo en segundos')
-    # plt.xlabel('Tamaño de la matriz')
-
-    # #plt.xscale("log")
-    # #plt.yscale("log")
-    # plt.legend()
-    # plt.show()
+    simular_difusion(1,101,10,1000)
+    # verificar_implementacion_tri(101)
