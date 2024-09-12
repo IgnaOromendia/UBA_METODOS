@@ -204,7 +204,7 @@ def verificar_implementacion_tri(n):
     plt.legend()
     plt.show()
 
-def generar_u_0(n,r):
+def generar_u0(n,r):
     u = np.zeros(n, dtype=np.float64)
 
     lower = (n // 2) - r
@@ -216,19 +216,16 @@ def generar_u_0(n,r):
 
 def calcular_difusion(A,r,m):
     n = A.shape[0]
-    u_0 = generar_u_0(n,r)
-    u_1 = np.zeros(n, dtype=np.float64)
-    difusion = [u_0]
+    u = [generar_u0(n,r)]
 
     L,U = factorizar_LU_tri(A.copy())
 
     for k in range(1,m):
-        y   = foward_substitution(L,difusion[k-1])
-        u_1 = backward_substitution(U, y)
-        # print(f"Paso {k}: {u_1}") 
-        difusion.append(u_1)
+        y  = foward_substitution(L,u[k-1])
+        uk = backward_substitution(U, y)
+        u.append(uk)
 
-    return np.array(difusion)
+    return np.array(u)
 
 def simular_difusion(alfa, n, r, m):
     # alfa  = multiplicador del laplaciano
@@ -243,13 +240,14 @@ def simular_difusion(alfa, n, r, m):
     A = np.eye(n, dtype=np.float64) - alfa * T
 
     # Caluclamos 
-    difusiones = calcular_difusion(A.copy(),r,m)
-
-    print(difusiones.shape)
+    difusiones = calcular_difusion(A,r,m)
 
     # Plot
     X = np.cumsum(difusiones,axis=0)
     plt.plot(X,'k',alpha=0.3);
+    plt.xlabel("k")
+    plt.ylabel("x")
+    plt.legend()
     plt.show()
 
 class TestEliminacionGausseana(unittest.TestCase):
@@ -394,7 +392,7 @@ def calcular_tiempos_naive_vs_pivoteo(l):
     return tiempos_naive, tiempos_pivoteo
 
 if __name__ == "__main__":
-    simular_difusion(1,101,10,50)
+    simular_difusion(1,101,10,1000)
 
     # verificar_implementacion_tri(101)
 
