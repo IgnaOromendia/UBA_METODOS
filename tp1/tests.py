@@ -1,6 +1,6 @@
 import unittest
-import numpy as np
-import tp1
+from desarrollo import *
+
 
 class TestEliminaciongaussiana(unittest.TestCase):
     def test_01_EG_sin_pivoteo(self):
@@ -8,7 +8,7 @@ class TestEliminaciongaussiana(unittest.TestCase):
             A = np.random.uniform(1, 10, size=(n, n)).astype(np.float64)
             b = np.random.uniform(1, 10, size=n).astype(np.float64)
             
-            x = tp1.eliminacion_gaussiana(A.copy(),b)
+            x = eliminacion_gaussiana(A.copy(),b)
 
             np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
         
@@ -19,7 +19,7 @@ class TestEliminaciongaussiana(unittest.TestCase):
 
             A[0,0] = 0 # Para verificar que realmente este pivoteando
             
-            x = tp1.eliminacion_gaussiana_pivoteo(A.copy(),b)
+            x = eliminacion_gaussiana_pivoteo(A.copy(),b)
 
             np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
 
@@ -32,7 +32,7 @@ class TestEliminaciongaussiana(unittest.TestCase):
             
             A = np.diag(d_pri) + np.diag(d_sup, k=1) + np.diag(d_inf, k=-1)
             
-            x = tp1.eliminacion_gaussiana_tridiagonal(A.copy(),b)
+            x = eliminacion_gaussiana_tridiagonal(A.copy(),b)
 
             np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
 
@@ -40,15 +40,15 @@ class TestEliminaciongaussiana(unittest.TestCase):
         for n in range(3,20):
             A = np.random.uniform(1, 10, size=(n, n)).astype(np.float64)
 
-            L,U = tp1.factorizar_LU(A.copy())
+            L,U = factorizar_LU(A.copy())
 
             np.testing.assert_array_almost_equal(np.dot(L,U), A, decimal=5)
 
             for _ in range(5):
                 b = np.random.uniform(1, 10, size=n).astype(np.float64)
                 
-                y = tp1.foward_substitution(L,b)
-                x = tp1.backward_substitution(U,y)
+                y = foward_substitution(L,b)
+                x = backward_substitution(U,y)
 
                 np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5) 
 
@@ -60,15 +60,15 @@ class TestEliminaciongaussiana(unittest.TestCase):
             
             A = np.diag(d_pri) + np.diag(d_sup, k=1) + np.diag(d_inf, k=-1)
 
-            L,U = tp1.factorizar_LU(A.copy())
+            L,U = factorizar_LU(A.copy())
 
             np.testing.assert_array_almost_equal(np.dot(L,U), A, decimal=5)
 
             for _ in range(5):
                 b = np.random.uniform(1, 10, size=n).astype(np.float64)
                 
-                y = tp1.foward_substitution(L,b)
-                x = tp1.backward_substitution(U,y)
+                y = foward_substitution(L,b)
+                x = backward_substitution(U,y)
 
                 np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
 
