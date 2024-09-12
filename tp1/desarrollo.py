@@ -94,7 +94,6 @@ def eliminacion_gaussiana_pivoteo(A, b):
 @jit
 def eliminacion_gaussiana_tridiagonal(T,b):
     n = T.shape[0]
-    L = np.eye(n, dtype=np.float64)
     A = np.zeros(n, dtype=np.float64)
     B = np.zeros(n, dtype=np.float64)
     C = np.zeros(n, dtype=np.float64)
@@ -110,7 +109,6 @@ def eliminacion_gaussiana_tridiagonal(T,b):
     # Resolvemos
     for i in range(1, n):
         m = A[i] / B[i-1]
-        L[i,i-1] = m
         A[i] = A[i] - m * B[i-1]  # A_i - A_i / B_i-1 * B_i-1    
         B[i] = B[i] - m * C[i-1]  # B_i - A_i / B_i-1 * C_i-1
     
@@ -157,10 +155,10 @@ def factorizar_LU_tri(T):
         
     # Resolvemos
     for i in range(1, n):
-        coeficiente = A[i] / B[i-1]
-        L[i,i-1] = coeficiente
-        A[i] = A[i] - coeficiente * B[i-1]  # A_i - A_i / B_i-1 * B_i-1    
-        B[i] = B[i] - coeficiente * C[i-1]  # B_i - A_i / B_i-1 * C_i-1
+        m = A[i] / B[i-1]
+        L[i,i-1] = m
+        A[i] = A[i] - m * B[i-1]  # A_i - A_i / B_i-1 * B_i-1    
+        B[i] = B[i] - m * C[i-1]  # B_i - A_i / B_i-1 * C_i-1
     
     for i in range(n):
         T[i][i] = B[i]
