@@ -3,8 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt # type: ignore
 import time
 
-def multiplicar_matriz_vector(A,x):
-    return np.dot(A,x)
+# Substitutions
 
 def backward_substitution(A, b):
     n = A.shape[0]
@@ -28,7 +27,9 @@ def foward_substitution(A, b):
 
     return x  
 
-def eliminacion_gausseana_naive(A, b): 
+# Eliminacion Gaussiana
+
+def eliminacion_gaussiana(A, b): 
     m = 0
     n = A.shape[0]
     A0 = A.copy()
@@ -62,7 +63,7 @@ def encontrar_pivote(A, i):
     # Devolvemos la fila
     return fila
             
-def eliminacion_gausseana_pivoteo(A, b): 
+def eliminacion_gaussiana_pivoteo(A, b): 
     m = 0
     n = A.shape[0]
     A0 = A.copy()
@@ -80,22 +81,7 @@ def eliminacion_gausseana_pivoteo(A, b):
 
     return backward_substitution(A0,b0)
 
-def factorizar_LU(T):
-    m = 0
-    n = T.shape[0]
-    A0 = T.copy()
-    L = np.eye(n, dtype=np.float64)
-    
-    for i in range(0,n):
-        for j in range(i+1, n):
-            m = A0[j,i]/A0[i,i]
-            L[j,i] = m
-            for k in range(i, n):
-                A0[j,k] = A0[j,k] - (m * A0[i,k])
-    
-    return L, A0
-
-def eliminacion_gausseana_tridiagonal(T,b):
+def eliminacion_gaussiana_tridiagonal(T,b):
     n = T.shape[0]
     
     A = np.zeros(n, dtype=np.float64)
@@ -122,7 +108,24 @@ def eliminacion_gausseana_tridiagonal(T,b):
         if (i < n-1): T[i][i+1] = C[i]
 
     return backward_substitution(T,b)
+
+# Factorización LU
+
+def factorizar_LU(T):
+    m = 0
+    n = T.shape[0]
+    A0 = T.copy()
+    L = np.eye(n, dtype=np.float64)
     
+    for i in range(0,n):
+        for j in range(i+1, n):
+            m = A0[j,i]/A0[i,i]
+            L[j,i] = m
+            for k in range(i, n):
+                A0[j,k] = A0[j,k] - (m * A0[i,k])
+    
+    return L, A0    
+
 def factorizar_LU_tri(T):
     n = T.shape[0]
     L = np.eye(n, dtype=np.float64)
@@ -151,6 +154,8 @@ def factorizar_LU_tri(T):
         if (i < n-1): T[i][i+1] = C[i]
 
     return L, T
+
+# Laplaciano
 
 def generar_laplaciano(n):
     A = np.zeros((n,n), dtype= np.float64)
@@ -204,6 +209,8 @@ def verificar_implementacion_tri(n):
     plt.legend()
     plt.show()
 
+# Difusión
+
 def generar_u0(n,r):
     u = np.zeros(n, dtype=np.float64)
 
@@ -250,7 +257,9 @@ def simular_difusion(alfa, n, r, m):
     plt.legend()
     plt.show()
 
-class TestEliminacionGausseana(unittest.TestCase):
+#
+
+class TestEliminaciongaussiana(unittest.TestCase):
     def test_01_resolver_sistema_clase(self):
         A = np.array([
             [2,1,-1,3],
@@ -262,7 +271,7 @@ class TestEliminacionGausseana(unittest.TestCase):
         b = np.array([13, -2, 24, -10], dtype=np.float64)
         esperado_x = np.array([1, -30, 7, 16], dtype=np.float64)
 
-        resultado_x = eliminacion_gausseana_naive(A, b)
+        resultado_x = eliminacion_gaussiana(A, b)
 
         np.testing.assert_array_almost_equal(resultado_x, esperado_x, decimal=10)
 
@@ -276,7 +285,7 @@ class TestEliminacionGausseana(unittest.TestCase):
 
         b = np.array([0,2,1], dtype=np.float64)
         
-        x = eliminacion_gausseana_naive(A.copy(),b)
+        x = eliminacion_gaussiana(A.copy(),b)
         
 
 
@@ -292,7 +301,7 @@ class TestEliminacionGausseana(unittest.TestCase):
     
         b = np.array([1, 4, 7, 6], dtype=np.float64)
         
-        x = eliminacion_gausseana_tridiagonal(A, b)
+        x = eliminacion_gaussiana_tridiagonal(A, b)
         
         np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
 
@@ -304,7 +313,7 @@ class TestEliminacionGausseana(unittest.TestCase):
         ], dtype=np.float64)
 
         b = np.array([3, 7, 10], dtype=np.float64)
-        x =  eliminacion_gausseana_pivoteo(A, b)
+        x =  eliminacion_gaussiana_pivoteo(A, b)
         
         
         np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
@@ -323,7 +332,7 @@ class TestEliminacionGausseana(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(np.dot(L,U), A, decimal=5)
 
-    def test_06_eliminacion_gausseana_LU(self):
+    def test_06_eliminacion_gaussiana_LU(self):
         A = np.array([
             [2,1,-1,3],
             [-2,0,0,0],
@@ -382,8 +391,8 @@ def calcular_tiempos_naive_vs_pivoteo(l):
     tiempos_naive = []
     i = 0
     for s in l:
-        t1 =  calcular_tiempo_avr(eliminacion_gausseana_naive, 10**-3,10**3, s, 10)
-        t2 =  calcular_tiempo_avr(eliminacion_gausseana_pivoteo, 10**-3,10**3, s, 10)
+        t1 =  calcular_tiempo_avr(eliminacion_gaussiana, 10**-3,10**3, s, 10)
+        t2 =  calcular_tiempo_avr(eliminacion_gaussiana_pivoteo, 10**-3,10**3, s, 10)
         tiempos_naive.append(t1)
         tiempos_pivoteo.append(t2)
         print("Tiempo nainve: ", t1, " Tiempo pivoteo: ", t2, "En el paso: ", i)
