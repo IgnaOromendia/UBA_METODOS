@@ -35,8 +35,8 @@ def calcular_tiempos_naive_vs_pivoteo(l):
     tiempos_naive = []
     i = 0
     for s in l:
-        t2 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos,eliminacion_gausseana_pivoteo, 10**-3,10**3, s, 10)
-        t1 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos,eliminacion_gausseana_naive, 10**-3,10**3, s, 10)
+        t2 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos,eliminacion_gaussiana_pivoteo, 10**-3,10**3, s, 10)
+        t1 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos,eliminacion_gaussiana, 10**-3,10**3, s, 10)
         tiempos_naive.append(t1)
         tiempos_pivoteo.append(t2)
         #print("Tiempo nainve: ", t1, " Tiempo pivoteo: ", t2, "para el tamaño: ", s)
@@ -49,8 +49,8 @@ def calcular_tiempos_naive_vs_tridiagonal(l):
     tiempos_trid = []
     i = 0
     for s in l:
-        t1 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos_tridiagonal,eliminacion_gausseana_naive, 10**-3,10**3, s, 10)
-        t2 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos_tridiagonal,eliminacion_gausseana_tridiagonal, 10**-3,10**3, s, 10)
+        t1 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos_tridiagonal,eliminacion_gaussiana, 10**-3,10**3, s, 10)
+        t2 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos_tridiagonal,eliminacion_gaussiana_tridiagonal, 10**-3,10**3, s, 10)
         tiempos_naive.append(t1)
         tiempos_trid.append(t2)
         #print("Tiempo nainve: ", t1, " Tiempo pivoteo: ", t2, "para el tamaño: ", s)
@@ -66,7 +66,7 @@ def calcular_tiempos_trid_vs_precomputo_trdi(s, n):
     b = np.random.uniform(10**-3,10**3, s)
     for i in range(n):
         start_time = time.time()
-        eliminacion_gausseana_tridiagonal(A, b)
+        eliminacion_gaussiana_tridiagonal(A, b)
         end_time = time.time()
         if i == 0:
             tiempo_trid[i] = end_time-start_time
