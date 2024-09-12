@@ -1,4 +1,4 @@
-from tp1 import *
+from desarrollo import *
 import time
 
 def calcular_tiempo_avr(funcion_hacer_matriz,funcion_calcular_sistema, l, h, s, cant):
