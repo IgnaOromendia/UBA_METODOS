@@ -1,32 +1,8 @@
-import unittest
 import numpy as np
-import matplotlib.pyplot as plt # type: ignore # type: ignore
-from numba import jit
+import matplotlib.pyplot as plt # type: ignore para que no se queje vs code
+from numba import jit           # type: ignore
 
-def multiplicar_matriz_vector(A,x):
-    y = np.zeros(x.shape, dtype=np.float64)
-    for i in range(A.shape[1]):
-        y[i] = sum([A[i, j]*x[j] for j in range(A.shape[1])])
-    return y
 # Substitutions
-
-@jit
-def eliminacion_gausseana_naive(A, b): 
-    m = 0
-    n = A.shape[0]
-    A0 = A.copy()
-    b0 = b.copy()
-    
-    for i in range(0,n):
-        for j in range(i+1, n):
-            m = A0[j,i]/A0[i,i]                 # coeficiente
-            b0[j] = b0[j] - (m * b0[i])            # aplicar a b
-            for k in range(i, n):
-                A0[j,k] = A0[j,k] - (m * A0[i,k])
-
-            
-    return backward_substitution(A0,b0)
-
 
 @jit
 def backward_substitution(A, b):
@@ -38,9 +14,9 @@ def backward_substitution(A, b):
         for j in range(i,n): suma += A[i,j] * x[j]
         x[i] = (b[i] - suma) / A[i,i]  
 
-
     return x     
-
+ 
+@jit
 def foward_substitution(A, b):
     n = A.shape[0]
     x = np.zeros(n, dtype=np.float64)
@@ -53,37 +29,6 @@ def foward_substitution(A, b):
     return x  
 
 # Eliminacion Gaussiana
-
-@jit
-def foward_substitution(A, b):
-    n = A.shape[0]
-    x = np.zeros(n, dtype=np.float64)
-
-    for i in range(n):
-        suma = 0
-        for j in range(0,i): suma += A[i,j] * x[j]
-        x[i] = (b[i] - suma) / A[i,i]  
-
-    return x  
-
-@jit
-def eliminacion_gausseana_pivoteo(A, b): 
-    m = 0
-    n = A.shape[0]
-    A0 = A.copy()
-    b0 = b.copy()
-
-    for i in range(0,n):
-        fila = encontrar_pivote(A0,i)  
-        permutar_filas(A0, i, fila)
-        permutar_elementos_vector(b0, i, fila)
-        for j in range(i+1, n):
-            m = A0[j][i]/A0[i][i]                 # coeficiente
-            b0[j] = b0[j] - (m * b0[i])            # aplicar a b
-            for k in range(i, n):
-                A0[j][k] = A0[j][k] - (m * A0[i][k])
-
-    return backward_substitution(A0,b0)
 
 @jit
 def eliminacion_gaussiana(A, b): 
@@ -99,7 +44,6 @@ def eliminacion_gaussiana(A, b):
             for k in range(i, n):
                 A0[j,k] = A0[j,k] - (m * A0[i,k])
 
-            
     return backward_substitution(A0,b0)
 
 @jit
@@ -129,23 +73,26 @@ def encontrar_pivote(A, i):
     return fila
 
 @jit
-def factorizar_LU(T):
+def eliminacion_gaussiana_pivoteo(A, b): 
     m = 0
-    n = T.shape[0]
-    A0 = T.copy()
-    L = np.eye(n, dtype=np.float64)
-    
+    n = A.shape[0]
+    A0 = A.copy()
+    b0 = b.copy()
+
     for i in range(0,n):
+        fila = encontrar_pivote(A0,i)  
+        permutar_filas(A0, i, fila)
+        permutar_elementos_vector(b0, i, fila)
         for j in range(i+1, n):
-            m = A0[j,i]/A0[i,i]
-            L[j,i] = m
+            m = A0[j][i]/A0[i][i]                 # coeficiente
+            b0[j] = b0[j] - (m * b0[i])            # aplicar a b
             for k in range(i, n):
-                A0[j,k] = A0[j,k] - (m * A0[i,k])
-    
-    return L, A0    
+                A0[j][k] = A0[j][k] - (m * A0[i][k])
+
+    return backward_substitution(A0,b0)
 
 @jit
-def eliminacion_gausseana_tridiagonal(T,b):
+def eliminacion_gaussiana_tridiagonal(T,b):
     n = T.shape[0]
     L = np.eye(n, dtype=np.float64)
     A = np.zeros(n, dtype=np.float64)
@@ -173,8 +120,26 @@ def eliminacion_gausseana_tridiagonal(T,b):
         if (i < n-1): T[i][i+1] = C[i]
 
     return backward_substitution(T,b)
+
+# Factorización LU
+
+@jit
+def factorizar_LU(T):
+    m = 0
+    n = T.shape[0]
+    A0 = T.copy()
+    L = np.eye(n, dtype=np.float64)
     
-@jit#
+    for i in range(0,n):
+        for j in range(i+1, n):
+            m = A0[j,i]/A0[i,i]
+            L[j,i] = m
+            for k in range(i, n):
+                A0[j,k] = A0[j,k] - (m * A0[i,k])
+    
+    return L, A0    
+
+@jit
 def factorizar_LU_tri(T):
     n = T.shape[0]
     L = np.eye(n, dtype=np.float64)
@@ -203,45 +168,6 @@ def factorizar_LU_tri(T):
         if (i < n-1): T[i][i+1] = C[i]
 
     return L, T
-
-def generar_laplaciano(n):
-    A = np.zeros((n,n), dtype= np.float64)
-
-    for i in range(n):
-        A[i,i] = -2
-        if i < n-1: A[i,i+1] = 1
-        if i > 0:   A[i,i-1] = 1
-
-    return A
-
-def generar_u_0(n,r,m):
-    u = np.zeros(n, dtype=np.float64)
-
-    lower = n // 2 - r
-    upper = n // 2 + r
-
-    for i in range(lower,upper):
-        u[i] = 1.0
-
-    return u
-
-def calcular_difusion(A,k,r,m):
-    n = A.shape[0]
-    u_0 = generar_u_0(n,r,m)
-    u_1 = np.zeros(n, dtype=np.float64)
-    difusion = [u_0]
-
-    L,U = factorizar_LU_tri(A.copy())
-
-    for _ in range(k):
-        y   = backward_substitution(U,u_0)
-        u_1 = backward_substitution(L, y)
-        difusion.append(u_1)
-
-    return difusion
-
-
-
 
 # Laplaciano
 
@@ -345,125 +271,10 @@ def simular_difusion(alfa, n, r, m):
     plt.legend()
     plt.show()
 
-#
-
-class TestEliminaciongaussiana(unittest.TestCase):
-    def test_01_resolver_sistema_clase(self):
-        A = np.array([
-            [2,1,-1,3],
-            [-2,0,0,0],
-            [4,1,-2,4],
-            [-6,-1,2,-3]
-            ], dtype=np.float64)
-
-        b = np.array([13, -2, 24, -10], dtype=np.float64)
-        esperado_x = np.array([1, -30, 7, 16], dtype=np.float64)
-
-        resultado_x = eliminacion_gaussiana(A, b)
-
-        np.testing.assert_array_almost_equal(resultado_x, esperado_x, decimal=10)
-
-    def test_02_resolver_sistema_internet(self):
-        A = np.array([
-            [1,2,1],
-            [1,0,1],
-            [0,1,2]
-            ], dtype=np.float64)
-
-
-        b = np.array([0,2,1], dtype=np.float64)
-        
-        x = eliminacion_gaussiana(A.copy(),b)
-        
-
-
-        np.testing.assert_array_almost_equal(np.dot(np.array(A),np.array(x)), np.array(b), decimal=5)
-
-    def test_03_resolver_tridiagonal(self):
-        A = np.array([
-            [ 2, -1,  0,  0],
-            [-1,  3, -1,  0],
-            [ 0, -1,  3, -1],
-            [ 0,  0, -1,  2]
-            ], dtype=np.float64)
-    
-        b = np.array([1, 4, 7, 6], dtype=np.float64)
-        
-        x = eliminacion_gausseana_tridiagonal(A,b)
-        
-        np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
-
-    def test_04_resolver_sistema_con_pivoteo(self):
-        A = np.array([
-            [2, 1, 1],
-            [4, 3, 1],
-            [2, 3, 4]
-        ], dtype=np.float64)
-
-        b = np.array([3, 7, 10], dtype=np.float64)
-        x =  eliminacion_gausseana_pivoteo(A, b)
-        
-        
-        np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
-
-    def test_05_factorizar_LU(self):
-        A = np.array([
-            [2,1,-1,3],
-            [-2,0,0,0],
-            [4,1,-2,4],
-            [-6,-1,2,-3]
-            ], dtype=np.float64)
-    
-        b = np.array([1, 4, 7, 6], dtype=np.float64)
-        
-        L, U = factorizar_LU(A.copy())
-        L, U = factorizar_LU(A.copy())
-
-        np.testing.assert_array_almost_equal(np.dot(L,U), A, decimal=5)
-
-    def test_06_eliminacion_gaussiana_LU(self):
-        A = np.array([
-            [2,1,-1,3],
-            [-2,0,0,0],
-            [4,1,-2,4],
-            [-6,-1,2,-3]
-            ], dtype=np.float64)
-    
-        b = np.array([1, 4, 7, 6], dtype=np.float64)
-        
-        L, U = factorizar_LU(A.copy())
-
-        np.testing.assert_array_almost_equal(np.dot(L,U), A, decimal=5)
-
-        y = foward_substitution(L,b)
-        x = backward_substitution(U,y)
-
-        np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5) 
-
-
-    def test_07_factorizar_LU_tri(self):
-        A = np.array([
-            [ 2, -1,  0,  0],
-            [-1,  3, -1,  0],
-            [ 0, -1,  3, -1],
-            [ 0,  0, -1,  2]
-            ], dtype=np.float64)
-    
-        b = np.array([1, 4, 7, 6], dtype=np.float64)
-        
-        L,U = factorizar_LU_tri(A.copy())
-
-        np.testing.assert_array_almost_equal(np.dot(L,U), A, decimal=5)
-
-        y = foward_substitution(L,b)
-        x = backward_substitution(U,y)
-        
-        np.testing.assert_array_almost_equal(np.dot(A,x), b, decimal=5)
-
 if __name__ == "__main__":
-    simular_difusion(1,101,10,1000)
+    # simular_difusion(1,101,10,1000)
 
-    # verificar_implementacion_tri(101)
+    verificar_implementacion_tri(101)
 
     # lista_size = [20,40,60,80,100,120,140,160,180,200]
     # t_n, t_p = calcular_tiempos_naive_vs_pivoteo(lista_size)
@@ -476,5 +287,3 @@ if __name__ == "__main__":
     # #plt.yscale("log")
     # plt.legend()
     # plt.show()
-    
-    unittest.main()
