@@ -1,12 +1,10 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt  # type: ignore para que no se queje vs code
-from numba import jit  # type: ignore
 
 
 # Substitutions
 
-@jit
 def backward_substitution(A, b):
     n = A.shape[0]
     x = np.zeros(n, dtype=np.float64)
@@ -19,7 +17,6 @@ def backward_substitution(A, b):
     return x
 
 
-@jit
 def forward_substitution(A, b):
     n = A.shape[0]
     x = np.zeros(n, dtype=np.float64)
@@ -34,7 +31,6 @@ def forward_substitution(A, b):
 
 # Eliminacion Gaussiana
 
-@jit
 def eliminacion_gaussiana(A, b):
     m = 0
     n = A.shape[0]
@@ -42,8 +38,9 @@ def eliminacion_gaussiana(A, b):
     b0 = b.copy()
 
     for i in range(0, n):
+        if A[i,i] == 0: print("AAAA!") #TODO 
         for j in range(i + 1, n):
-            m = A0[j, i] / A0[i, i]  # coeficiente
+            m = A0[j, i] / A0[i, i]  
             b0[j] = b0[j] - (m * b0[i])  # aplicar a b
             for k in range(i, n):
                 A0[j, k] = A0[j, k] - (m * A0[i, k])
@@ -51,21 +48,19 @@ def eliminacion_gaussiana(A, b):
     return backward_substitution(A0, b0)
 
 
-@jit
 def permutar_filas(A, i, j):
     copia = A[i].copy()
     A[i] = A[j]
     A[j] = copia
 
 
-@jit
 def permutar_elementos_vector(A, i, j):
     copia = A[i]
     A[i] = A[j]
     A[j] = copia
 
 
-@jit
+
 def encontrar_pivote(A, i):
     max = abs(A[i, i])
     fila = i
@@ -80,7 +75,7 @@ def encontrar_pivote(A, i):
     return fila
 
 
-@jit
+
 def eliminacion_gaussiana_pivoteo(A, b):
     m = 0
     n = A.shape[0]
@@ -100,7 +95,7 @@ def eliminacion_gaussiana_pivoteo(A, b):
     return backward_substitution(A0, b0)
 
 
-@jit
+
 def eliminacion_gaussiana_tridiagonal(T, b):
     n = T.shape[0]
     L = np.eye(n, dtype=np.float64)
@@ -133,7 +128,7 @@ def eliminacion_gaussiana_tridiagonal(T, b):
 
 # Factorización LU
 
-@jit
+
 def factorizar_LU(T):
     m = 0
     n = T.shape[0]
@@ -150,7 +145,7 @@ def factorizar_LU(T):
     return L, A0
 
 
-@jit
+
 def factorizar_LU_tri(T):
     n = T.shape[0]
     L = np.eye(n, dtype=np.float64)
