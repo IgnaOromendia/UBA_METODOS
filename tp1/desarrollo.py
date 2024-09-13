@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import matplotlib.pyplot as plt  # type: ignore para que no se queje vs code
 from numba import jit  # type: ignore
@@ -183,14 +184,11 @@ def factorizar_LU_tri(T):
 # Laplaciano
 
 def generar_laplaciano(n):
-    A = np.zeros((n, n), dtype=np.float64)
-
-    for i in range(n):
-        A[i, i] = -2
-        if i < n - 1: A[i, i + 1] = 1
-        if i > 0:   A[i, i - 1] = 1
-
-    return A
+    T = np.zeros((n, n), dtype=np.float64)
+    np.fill_diagonal(T, -2)
+    np.fill_diagonal(T[1:], 1)
+    np.fill_diagonal(T[:, 1:], 1)
+    return T
 
 
 def generar_d1(n):
@@ -278,73 +276,55 @@ def simular_difusion(alfa, n, r, m):
     # Generamos A
     A = np.eye(n, dtype=np.float64) - alfa * T
 
-    # Caluclamos
+    # Calculamos
     difusiones = calcular_difusion(A, r, m)
 
-    # Plot
-    X = np.cumsum(difusiones, axis=0)
-    plt.plot(X, 'k', alpha=0.3);
-    plt.xlabel("k")
-    plt.ylabel("x")
+    return difusiones
+
+def plot_diffusion_evolution(alphas, n, r, m):
+    """Plot the diffusion evolution for different alpha values."""
+    fig, axes = plt.subplots(len(alphas), 1, figsize=(10, 5 * len(alphas)))
+
+    if len(alphas) == 1:
+        axes = [axes]  # Ensure axes is iterable if there's only one subplot
+
+    for idx, alfa in enumerate(alphas):
+        # Compute diffusion for the given alpha
+        difusion_result = simular_difusion(alfa, n, r, m)
+
+        # Plot the evolution
+        X = np.arange(difusion_result.shape[0])
+        center_index = n // 2
+
+        axes[idx].plot(X, difusion_result[:, center_index], label=f'α = {alfa}')
+        axes[idx].set_title(f'Diffusion Evolution for α = {alfa}')
+        axes[idx].set_xlabel('Time step')
+        axes[idx].set_ylabel('Value at center')
+        axes[idx].legend()
+
+    plt.tight_layout()
     plt.show()
 
 
-def generar_u0_2d(n, r):
-    u0 = np.zeros((n, n))
-    centro = n // 2
-    for i in range(n):
-        for j in range(n):
-            if np.sqrt((i - centro) ** 2 + (j - centro) ** 2) < r:
-                u0[i, j] = 1
-    return u0
+    # Parameters
+    n = 101  # Grid size
+    r = 10  # Condensation size
+    m = 1000  # Number of time steps
+    alphas = [0.5, 1.0, 2.0]  # Different values of alpha to compare
 
-
-def calcular_difusion_2d(A, r, m):
-    n = A.shape[0]
-    u = [generar_u0_2d(n, r)]
-    L, U = factorizar_LU_tri(A.copy())
-
-    for k in range(1, m):
-        u_k_prev = u[-1].flatten()
-        y = forward_substitution(L, u_k_prev)
-        u_k = backward_substitution(U, y)
-        u.append(u_k.reshape((n, n)))
-
-    return np.array(u)
-
-
-def probar_difusion_2d():
-    # Example usage
-    n = 50  # Size of the grid (n x n)
-    r = 10  # Initial condition parameter
-    m = 100  # Number of time steps
-
-    # Define a 2D diffusion matrix (e.g., Laplacian)
-    A = np.zeros((n * n, n * n))
-    for i in range(n):
-        for j in range(n):
-            index = i * n + j
-            if i > 0:
-                A[index, (i - 1) * n + j] = 1
-            if i < n - 1:
-                A[index, (i + 1) * n + j] = 1
-            if j > 0:
-                A[index, i * n + (j - 1)] = 1
-            if j < n - 1:
-                A[index, i * n + (j + 1)] = 1
-            A[index, index] = -4  # Central element
-
-    # Run the diffusion simulation
-    results = calcular_difusion_2d(A, r, m)
-
-    # Example: plot the results for the final time step
-    plt.imshow(results[-1], cmap='hot', interpolation='none')
-    plt.colorbar()
-    plt.title('2D Diffusion at Final Time Step')
-    plt.show()
 
 
 if __name__ == "__main__":
-    #simular_difusion(1, 101, 10, 1000)
+    #simular_difusion(0.1, 101, 10, 1000)
     # verificar_implementacion_tri(101)
-    probar_difusion_2d()
+    #difusion_result = simular_difusion_2d(0.1, 15, 100, 100)
+    #plot_heatmaps(difusion_result)
+    # Plot the diffusion evolution for different alpha values
+    # Parameters
+    n = 101  # Grid size
+    r = 10  # Condensation size
+    m = 1000  # Number of time steps
+    alphas = [1.0, 2.0]  # Different values of alpha to compare
+    plot_diffusion_evolution(alphas, n, r, m)
+
+
