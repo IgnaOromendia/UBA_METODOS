@@ -1,4 +1,4 @@
-from tp1 import *
+from desarrollo import *
 
 def explorar_error_numerico(lista_epsilons, fl):
     lista_resultados = []
