@@ -281,50 +281,16 @@ def simular_difusion(alfa, n, r, m):
 
     return difusiones
 
-def plot_diffusion_evolution(alphas, n, r, m):
-    """Plot the diffusion evolution for different alpha values."""
-    fig, axes = plt.subplots(len(alphas), 1, figsize=(10, 5 * len(alphas)))
-
-    if len(alphas) == 1:
-        axes = [axes]  # Ensure axes is iterable if there's only one subplot
-
-    for idx, alfa in enumerate(alphas):
-        # Compute diffusion for the given alpha
-        difusion_result = simular_difusion(alfa, n, r, m)
-
-        # Plot the evolution
-        X = np.arange(difusion_result.shape[0])
-        center_index = n // 2
-
-        axes[idx].plot(X, difusion_result[:, center_index], label=f'α = {alfa}')
-        axes[idx].set_title(f'Diffusion Evolution for α = {alfa}')
-        axes[idx].set_xlabel('Time step')
-        axes[idx].set_ylabel('Value at center')
-        axes[idx].legend()
-
-    plt.tight_layout()
+def plot_diffusion_evolution(alfa = 1, n = 101, r = 10, m = 1000):
+    difusiones = simular_difusion(alfa, n, r, m)
+    plt.pcolor(difusiones.T, cmap='plasma')
+    plt.colorbar(label='u')
+    plt.title(f'Mapa de calor')
+    plt.xlabel('k')
+    plt.ylabel('x')
     plt.show()
-
-
-    # Parameters
-    n = 101  # Grid size
-    r = 10  # Condensation size
-    m = 1000  # Number of time steps
-    alphas = [0.5, 1.0, 2.0]  # Different values of alpha to compare
-
-
+        
 
 if __name__ == "__main__":
-    #simular_difusion(0.1, 101, 10, 1000)
-    # verificar_implementacion_tri(101)
-    #difusion_result = simular_difusion_2d(0.1, 15, 100, 100)
-    #plot_heatmaps(difusion_result)
-    # Plot the diffusion evolution for different alpha values
-    # Parameters
-    n = 101  # Grid size
-    r = 10  # Condensation size
-    m = 1000  # Number of time steps
-    alphas = [1.0, 2.0]  # Different values of alpha to compare
-    plot_diffusion_evolution(alphas, n, r, m)
-
+    print("TP1")
 
