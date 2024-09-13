@@ -75,13 +75,11 @@ def calcular_tiempos_trid_vs_precomputo_trdi(s, n):
         if i == 0:
             start_time = time.time()
             L,U = factorizar_LU_tri(A)
-            y = foward_substitution(L,b)
             x = backward_substitution(U,y)
             end_time = time.time()
             tiempo__prec[i] =  end_time- start_time
         else:
             start_time = time.time()
-            y = foward_substitution(L,b)
             x = backward_substitution(U,y)
             end_time = time.time()
             tiempo__prec[i] = (end_time-start_time) + tiempo__prec[i-1]
