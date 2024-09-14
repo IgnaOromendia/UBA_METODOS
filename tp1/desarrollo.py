@@ -17,7 +17,6 @@ def backward_substitution(A, b):
 
     return x
 
-
 def forward_substitution(A, b):
     n = A.shape[0]
     x = np.zeros(n, dtype=np.float64)
@@ -30,19 +29,31 @@ def forward_substitution(A, b):
 
     return x
 
+def backward_substitution_tri(A,b):
+    n = A.shape[0]
+    x = np.zeros(n, dtype=np.float64)
+
+    for i in range(n - 1, -1, -1):
+        suma = 0
+        if i < n - 1:
+            suma = A[i,i+1] * x[i+1]
+        x [i] = (b[i] - suma) / A[i,i]
+
+    return x
+
+def forward_substitution_tri(A,b):
+    n = A.shape[0]
+    x = np.zeros(n, dtype=np.float64)
+
+    for i in range(n):
+        suma = 0
+        if i > 0:
+            suma = A[i,i-1] * x[i-1]
+        x [i] = (b[i] - suma) / A[i,i]
+
+    return x
 
 # Eliminacion Gaussiana
-
-def generar_matrices_diagonables_sin_pivoteo(n): #TODO porner esta funcion en el lugar correcto
-    L = np.random.uniform(1,2, size=(n,n))
-    U = np.random.uniform(1,2, size=(n,n))
-    for i in range(n):
-        L[i,i] = 1
-        for j in range(i+1, n):
-            L[i,j] = 0
-            U[j,i] = 0
-    r = (L@U).astype(np.float64) #TODO pregunrtar si hace falta hacer nosotros la mult de matrices
-    return r
 
 def eliminacion_gaussiana(A, b):
     m = 0
@@ -60,18 +71,15 @@ def eliminacion_gaussiana(A, b):
 
     return backward_substitution(A0, b0)
 
-
 def permutar_filas(A, i, j):
     copia = A[i].copy()
     A[i] = A[j]
     A[j] = copia
 
-
 def permutar_elementos_vector(A, i, j):
     copia = A[i]
     A[i] = A[j]
     A[j] = copia
-
 
 def encontrar_pivote(A, i):
     max = abs(A[i, i])
@@ -85,7 +93,6 @@ def encontrar_pivote(A, i):
             max = abs(A[k, i])
     # Devolvemos la fila
     return fila
-
 
 def eliminacion_gaussiana_pivoteo(A, b):
     m = 0
@@ -105,7 +112,6 @@ def eliminacion_gaussiana_pivoteo(A, b):
 
     
     return backward_substitution(A0, b0)
-
 
 def eliminacion_gaussiana_tridiagonal(T, b):
     n = T.shape[0]
@@ -136,11 +142,9 @@ def eliminacion_gaussiana_tridiagonal(T, b):
         if (i < n - 1): T[i][i + 1] = C[i]
 
     
-    return backward_substitution(T, b)
-
+    return backward_substitution_tri(T, b)
 
 # Factorización LU
-
 
 def factorizar_LU(T):
     m = 0
@@ -160,7 +164,6 @@ def factorizar_LU(T):
             A0[i][j] = 0
 
     return L, A0
-
 
 def factorizar_LU_tri(T):
     n = T.shape[0]
@@ -191,7 +194,6 @@ def factorizar_LU_tri(T):
 
     return L, T
 
-
 # Laplaciano
 
 def generar_laplaciano(n):
@@ -200,7 +202,6 @@ def generar_laplaciano(n):
     np.fill_diagonal(T[1:], 1)
     np.fill_diagonal(T[:, 1:], 1)
     return T
-
 
 def generar_laplaciano_2d(n):
     T = np.zeros((n, n), dtype=np.float64)
@@ -217,22 +218,18 @@ def generar_laplaciano_2d(n):
 
     return T
 
-
 def generar_d1(n):
     d = np.zeros(n, dtype=np.float64)
     d[n // 2 + 1] = 4 / n
     return d
 
-
 def generar_d2(n):
     return np.full(n, 4 / n ** 2)
-
 
 def generar_d3(n):
     d = np.zeros(n, dtype=np.float64)
     for i in range(n): d[i] = (-1 + ((2 * i) / (n - 1))) * (12 / (n ** 2))
     return d
-
 
 def verificar_implementacion_tri(n):
     d1 = generar_d1(n)
@@ -244,14 +241,14 @@ def verificar_implementacion_tri(n):
 
     L, U = factorizar_LU_tri(A.copy())
 
-    y = forward_substitution(L, d1)
-    u1 = backward_substitution(U, y)
+    y = forward_substitution_tri(L, d1)
+    u1 = backward_substitution_tri(U, y)
 
-    y = forward_substitution(L, d2)
-    u2 = backward_substitution(U, y)
+    y = forward_substitution_tri(L, d2)
+    u2 = backward_substitution_tri(U, y)
 
-    y = forward_substitution(L, d3)
-    u3 = backward_substitution(U, y)
+    y = forward_substitution_tri(L, d3)
+    u3 = backward_substitution_tri(U, y)
 
     tams = [i for i in range(n)]
 
@@ -261,8 +258,7 @@ def verificar_implementacion_tri(n):
     plt.xlabel("x")
     plt.ylabel("u")
     plt.legend()
-    plt.show()
-
+    plt.savefig("graficos/verificacion_triangular.png", format="PNG", bbox_inches='tight')
 
 # Difusión
 
@@ -276,12 +272,10 @@ def generar_u0(n, r):
 
     return u
 
-
 def generar_u0_2d(n):
     u = np.zeros((n, n), dtype=np.float64)
     u[(n // 2), (n // 2)] = 100
     return u
-
 
 def calcular_difusion(A, r, m):
     n = A.shape[0]
@@ -295,12 +289,10 @@ def calcular_difusion(A, r, m):
 
     return np.array(u)
 
-
 def resolver_LU(L, U, x):
     y = forward_substitution(L, x)
     uk = backward_substitution(U, y)
     return uk
-
 
 def calcular_difusion_2d(A, m):
     n = A.shape[0]
@@ -321,7 +313,6 @@ def calcular_difusion_2d(A, m):
 
     return np.array(u)
 
-
 def simular_difusion_2d(alfa, n, r, m):
     T = generar_laplaciano_2d(n * n)
 
@@ -330,7 +321,6 @@ def simular_difusion_2d(alfa, n, r, m):
     difusiones_2d = calcular_difusion_2d(A, m)
 
     return difusiones_2d
-
 
 def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
     difusiones = simular_difusion_2d(alfa, n, r, m)
@@ -344,4 +334,5 @@ def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
 if __name__ == "__main__":
     print("TP1")
     #simular_difusion_2d(0.1, 15, 1, 100)
-    plot_diffusion_evolution(1, 3, 1, 100)
+    # plot_diffusion_evolution(1, 3, 1, 100)
+    verificar_implementacion_tri(101)
