@@ -206,16 +206,17 @@ def generar_laplaciano(n):
 
 def generar_laplaciano_2d(n):
     T = np.zeros((n, n), dtype=np.float64)
+    sn = int(np.sqrt(n))
     for i in range(n):
         T[i, i] = -4
-        if i != n - 1 and (i + 1) % 3 != 0:
+        if i != n - 1 and (i + 1) % sn != 0:
             T[i, i + 1] = 1
-        if i != 0 and i % 3 != 0:
+        if i != 0 and i % sn != 0:
             T[i, i - 1] = 1
-        if i <= n - 4:
-            T[i, i + 3] = 1
-        if i >= 3:
-            T[i, i - 3] = 1
+        if i <= n - sn - 1:
+            T[i, i + sn] = 1
+        if i >= sn:
+            T[i, i - sn] = 1
 
     return T
 
@@ -335,16 +336,8 @@ def simular_difusion_2d(alfa, n, r, m):
 
     return difusiones_2d
 
-<<<<<<< HEAD
-
-def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
-    difusiones = simular_difusion_2d(alfa, n, r, m)
-    print("difusiones", len(difusiones))
-=======
 def plot_diffusion_evolution_2D(alfa=1, n=101, r=10, m=1000):
-    difusiones = simular_difusion(alfa, n, r, m)
-    print("difusiones", difusiones.shape)
->>>>>>> 8790310814e6e53f3fe8721517ccedf0b1b4cba8
+    difusiones = simular_difusion_2d(alfa, n, r, m)
     plt.pcolor(difusiones[50], cmap='hot')
     plt.colorbar(label='u')
     plt.title(f'Mapa de calor')
@@ -353,12 +346,10 @@ def plot_diffusion_evolution_2D(alfa=1, n=101, r=10, m=1000):
     plt.show()
 
 if __name__ == "__main__":
-    print("TP1")
-<<<<<<< HEAD
     #simular_difusion_2d(0.1, 15, 1, 100)
-    plot_diffusion_evolution(1, 15, 1, 100)
-=======
+    plot_diffusion_evolution_2D(1, 15, 1, 100)
+
     # plot_diffusion_evolution()
     # plot_diffusion_evolution_2D(1, 3, 1, 100)
     # verificar_implementacion_tri(101)
->>>>>>> 8790310814e6e53f3fe8721517ccedf0b1b4cba8
+
