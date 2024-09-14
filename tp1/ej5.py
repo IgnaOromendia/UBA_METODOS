@@ -71,6 +71,7 @@ def calcular_tiempos_trid_vs_precomputo_trdi(s, n):
         if i == 0:
             tiempo_trid[i] = end_time-start_time
         else: tiempo_trid[i] = (end_time-start_time) + tiempo_trid[i-1]
+
     for i in range(n):
         if i == 0:
             start_time = time.time()
@@ -114,7 +115,7 @@ if __name__ == "__main__":
     plt.plot([i for i in range(n)], t_t, color = 'blue',label='Eliminacion tridiagonal')
     plt.plot([i for i in range(n)], t_pre_t, color = 'red',label='Eliminacion tridiagonal con precomputo')
     plt.ylabel('Tiempo en segundos')
-    plt.xlabel('Tamaño de la matriz')
+    plt.xlabel('Cantidad de soluciones buscadas')
     #plt.xscale("log")
     #plt.yscale("log")
     plt.legend()

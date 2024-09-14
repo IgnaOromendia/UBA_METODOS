@@ -11,7 +11,8 @@ def backward_substitution(A, b):
 
     for i in range(n - 1, -1, -1):
         suma = 0
-        for j in range(i, n): suma += A[i, j] * x[j]
+        for j in range(i, n): 
+            suma += A[i, j] * x[j]
         x[i] = (b[i] - suma) / A[i, i]
 
     return x
@@ -186,6 +187,17 @@ def generar_laplaciano(n):
     return T
 
 
+def generar_laplaciano_2d(n):
+    T = np.zeros((n,n), dtype=np.float64)
+    for i in range(n):
+        T[i][i] = -4
+        if i != n-1 and (i+1)%3 != 0: T[i][i+1] = 1
+        if i != 0 and (i)%3 != 0: T[i][i-1] = 1
+        if i <= n-4: T[i][i+3] = 1
+        if i >= 3: T[i][i-3] = 1
+
+    return T
+
 def generar_d1(n):
     d = np.zeros(n, dtype=np.float64)
     d[n // 2 + 1] = 4 / n
@@ -245,6 +257,11 @@ def generar_u0(n, r):
     return u
 
 
+def generar_u0_2d(n, r):
+    u = np.zeros((n,n), dtype=np.float64)
+    u[(n//2) , (n//2) ] = 100
+    return u
+
 def calcular_difusion(A, r, m):
     n = A.shape[0]
     u = [generar_u0(n, r)]
@@ -258,27 +275,39 @@ def calcular_difusion(A, r, m):
 
     return np.array(u)
 
+def calcular_difusion_2d(A, r, m):
+    n = A.shape[0]
+    sn = int(np.sqrt(n))
+    u = [generar_u0_2d(sn, r)]
+    print(sn)
+    print(u[0].shape[0])
+    plt.imshow(A)
+    plt.show()
+    L, U = factorizar_LU(A.copy())
+    for k in range(1, m):
+        y = forward_substitution(L, u[k - 1].flatten())
+        uk = backward_substitution(U, y)
+        uk[n//2] = 100
+        # TODO Bordes
+        # uk[0:n]
+        u.append(uk.reshape(sn,sn))
 
-def simular_difusion(alfa, n, r, m):
-    # alfa  = multiplicador del laplaciano
-    # m     = cantidad de pasos a simular
-    # n     = tamaño del vector
-    # r     = condensación
+    return np.array(u)
+    
 
-    # Matriz laplaciana
-    T = generar_laplaciano(n)
+def simular_difusion_2d(alfa, n, r, m):
+    T = generar_laplaciano_2d(n*n)
 
-    # Generamos A
-    A = np.eye(n, dtype=np.float64) - alfa * T
+    A = np.eye(n*n, dtype=np.float64) - alfa * T
 
-    # Calculamos
-    difusiones = calcular_difusion(A, r, m)
+    difusiones_2d = calcular_difusion_2d(A, r, m)
 
-    return difusiones
+    return difusiones_2d
 
 def plot_diffusion_evolution(alfa = 1, n = 101, r = 10, m = 1000):
-    difusiones = simular_difusion(alfa, n, r, m)
-    plt.pcolor(difusiones.T, cmap='plasma')
+    difusiones = simular_difusion_2d(alfa, n, r, m)
+    print("difusiones", difusiones.shape )
+    plt.pcolor(difusiones[50], cmap='hot')
     plt.colorbar(label='u')
     plt.title(f'Mapa de calor')
     plt.xlabel('k')
@@ -288,4 +317,6 @@ def plot_diffusion_evolution(alfa = 1, n = 101, r = 10, m = 1000):
 
 if __name__ == "__main__":
     print("TP1")
+    #simular_difusion_2d(0.1, 15, 1, 100)
+    plot_diffusion_evolution(0.25, 4, 1, 100)
 
