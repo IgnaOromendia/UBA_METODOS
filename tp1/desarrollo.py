@@ -293,13 +293,11 @@ def generar_u0(n, r):
 
     return u
 
-
-def calcular_difusion(A, r, m):
-    n = A.shape[0]
+def simular_difusion(alfa, n, r, m):
+    A = np.eye(n, dtype=np.float64) - alfa * generar_laplaciano(n)
     u = [generar_u0(n, r)]
 
     a, b, c = diagonales(A)
-
     L, U = factorizar_LU_tri(a, b, c)
 
     for k in range(1, m):
@@ -307,14 +305,6 @@ def calcular_difusion(A, r, m):
         u.append(uk)
 
     return np.array(u)
-
-
-def simular_difusion(alfa, n, r, m):
-    A = np.eye(n, dtype=np.float64) - alfa * generar_laplaciano(n)
-
-    difusiones = calcular_difusion(A, r, m)
-
-    return difusiones
 
 
 def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
