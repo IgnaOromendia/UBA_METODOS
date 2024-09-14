@@ -1,33 +1,39 @@
 import unittest
 from desarrollo import *
 
+
 def matriz_valida_EG_sin_pivoteo(n):
     np.random.seed(9)
     L = np.random.randint(1,2, size=(n,n)).astype(np.float64)
     U = np.random.randint(1,2, size=(n,n)).astype(np.float64)
     for i in range(n):
-        L[i,i] = 1
-        for j in range(i+1, n):
-            L[i,j] = 0
-            U[j,i] = 0
+        L[i, i] = 1
+        for j in range(i + 1, n):
+            L[i, j] = 0
+            U[j, i] = 0
     return L @ U
+
 
 # Generamos una matriz estrictamente diagonal dominanate, por lo tanto tiene LU
 def matriz_edd(n):
-    A = np.zeros((n,n), dtype=np.float64)
+    A = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
-        A[i,i] = 2*n
+        A[i, i] = 2 * n
         for j in range(n):
-            if i == j: continue
-            A[i,j] = 1
+            if i == j:
+                continue
+            A[i, j] = 1
     return A
 
+
 def matriz_tridiagonal_edd(n):
-    A = np.zeros((n,n), dtype=np.float64)
+    A = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
-        A[i,i] = 3
-        if i < n - 1: A[i,i+1] = 1
-        if i > 0: A[i,i-1] = 1
+        A[i, i] = 3
+        if i < n - 1:
+            A[i, i + 1] = 1
+        if i > 0:
+            A[i, i - 1] = 1
     return A
 
 
@@ -58,16 +64,16 @@ class TestEliminaciongaussiana(unittest.TestCase):
             a = np.full(n, 1, dtype=np.float64)
             b = np.full(n, 3, dtype=np.float64)
             c = np.full(n, 1, dtype=np.float64)
-            a[0]   = 0
-            c[-1]  = 0
+            a[0] = 0
+            c[-1] = 0
 
-            x = eliminacion_gaussiana_tridiagonal(a,b,c,d)
-            
+            x = eliminacion_gaussiana_tridiagonal(a, b, c, d)
+
             np.testing.assert_array_almost_equal(np.dot(matriz_tridiagonal_edd(n), x), d, decimal=5)
 
     def test_04_factorizacion_LU(self):
         for n in range(3, 50):
-            A = matriz_edd(n) 
+            A = matriz_edd(n)
 
             L, U = factorizar_LU(A.copy())
 
@@ -76,7 +82,7 @@ class TestEliminaciongaussiana(unittest.TestCase):
             for _ in range(5):
                 b = np.random.randint(1, 10, size=n).astype(np.float64)
 
-                x = resolver_LU(L,U,b)
+                x = resolver_LU(L, U, b)
 
                 np.testing.assert_array_almost_equal(np.dot(A, x), b, decimal=5)
 
@@ -86,19 +92,20 @@ class TestEliminaciongaussiana(unittest.TestCase):
             a = np.full(n, 1, dtype=np.float64)
             b = np.full(n, 3, dtype=np.float64)
             c = np.full(n, 1, dtype=np.float64)
-            a[0]   = 0
-            c[-1]  = 0
+            a[0] = 0
+            c[-1] = 0
 
-            L, U = factorizar_LU_tri(a,b,c)
+            L, U = factorizar_LU_tri(a, b, c)
 
             np.testing.assert_array_almost_equal(np.dot(L, U), A, decimal=5)
 
             for _ in range(5):
                 d = np.random.randint(1, 10, size=n).astype(np.float64)
 
-                x = resolver_LU_tri(L,U,d)
+                x = resolver_LU_tri(L, U, d)
 
                 np.testing.assert_array_almost_equal(np.dot(A, x), d, decimal=5)
+
 
 if __name__ == "__main__":
     unittest.main()
