@@ -29,8 +29,6 @@ def matriz_tridiagonal_edd(n):
         if i > 0: A[i,i-1] = 1
     return A
 
-def armar_matriz_tri_con(a,b,c):
-    return np.diag(a) + np.diag(b) + np.diag(c)
 
 class TestEliminaciongaussiana(unittest.TestCase):
     def test_01_EG_sin_pivoteo(self):
