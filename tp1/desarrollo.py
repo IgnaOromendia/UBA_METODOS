@@ -301,7 +301,7 @@ def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
 
 
 # Difusión 2D
-def generar_laplaciano_2d(n, u_n):
+def generar_laplaciano_2D(n, u_n):
     T = np.zeros((n, n), dtype=np.float64)
     u_n = int(np.sqrt(n))
     for i in range(n):
@@ -317,7 +317,7 @@ def generar_laplaciano_2d(n, u_n):
 
     return T
 
-def generar_u0_2d(n):
+def generar_u0_2D(n):
     u = np.zeros((n, n), dtype=np.float64)
     u[(n // 2), (n // 2)] = 100
     return u
@@ -330,10 +330,10 @@ def mantener_constantes(uk, n):
     uk[n - 1, :] = 0
     return uk
 
-def simular_difusion_2d(alfa, n, m):
-    A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2d(n * n, n)
+def simular_difusion_2D(alfa, n, m):
+    A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2D(n * n, n)
 
-    u = [generar_u0_2d(n)]
+    u = [generar_u0_2D(n)]
 
     L, U = factorizar_LU(A.copy())
 
@@ -344,9 +344,8 @@ def simular_difusion_2d(alfa, n, m):
 
     return u
 
-
 def plot_diffusion_evolution_2D(alfa=0.1, n=15, m=100, t=50):
-    difusiones = simular_difusion_2d(alfa, n, m)
+    difusiones = simular_difusion_2D(alfa, n, m)
     plt.pcolor(difusiones[t], cmap='hot')
     plt.colorbar(label='u')
     plt.title(f'Mapa de calor')
