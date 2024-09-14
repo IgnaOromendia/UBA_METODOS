@@ -2,7 +2,6 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt  # type: ignore para que no se queje vs code
 
-
 # Substitutions
 
 def backward_substitution(A, b):
@@ -194,6 +193,11 @@ def factorizar_LU_tri(T):
 
     return L, T
 
+def resolver_LU(L, U, b):
+    y = forward_substitution(L, b)
+    x = backward_substitution(U, y)
+    return x
+
 # Laplaciano
 
 def generar_laplaciano(n):
@@ -289,10 +293,25 @@ def calcular_difusion(A, r, m):
 
     return np.array(u)
 
-def resolver_LU(L, U, x):
-    y = forward_substitution(L, x)
-    uk = backward_substitution(U, y)
-    return uk
+def simular_difusion(alfa, n, r, m):
+    T = generar_laplaciano(n)
+
+    A = np.eye(n, dtype=np.float64) - alfa * T
+
+    difusiones = calcular_difusion(A, r, m)
+
+    return difusiones
+
+def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
+    difusiones = simular_difusion(alfa, n, r, m)
+    plt.pcolor(difusiones.T, cmap='hot')
+    plt.colorbar(label='u')
+    plt.title(f'Mapa de calor')
+    plt.xlabel('k')
+    plt.ylabel('x')
+    plt.show()
+
+# Difusión 2D
 
 def calcular_difusion_2d(A, m):
     n = A.shape[0]
@@ -322,17 +341,21 @@ def simular_difusion_2d(alfa, n, r, m):
 
     return difusiones_2d
 
-def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
-    difusiones = simular_difusion_2d(alfa, n, r, m)
+def plot_diffusion_evolution_2D(alfa=1, n=101, r=10, m=1000):
+    difusiones = simular_difusion(alfa, n, r, m)
     print("difusiones", difusiones.shape)
-    #plt.pcolor(difusiones[50], cmap='hot')
+    plt.pcolor(difusiones[50], cmap='hot')
     plt.colorbar(label='u')
     plt.title(f'Mapa de calor')
     plt.xlabel('k')
     plt.ylabel('x')
+    plt.show()
 
 if __name__ == "__main__":
     print("TP1")
-    #simular_difusion_2d(0.1, 15, 1, 100)
-    # plot_diffusion_evolution(1, 3, 1, 100)
-    verificar_implementacion_tri(101)
+    # plot_diffusion_evolution()
+    # plot_diffusion_evolution_2D(1, 3, 1, 100)
+    # verificar_implementacion_tri(101)
+    L,U = factorizar_LU_tri(generar_laplaciano(3))
+    print(L)
+    print(U)
