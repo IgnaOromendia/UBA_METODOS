@@ -112,36 +112,28 @@ def eliminacion_gaussiana_pivoteo(A, b):
     
     return backward_substitution(A0, b0)
 
-def eliminacion_gaussiana_tridiagonal(T, b):
-    n = T.shape[0]
-    L = np.eye(n, dtype=np.float64)
-    A = np.zeros(n, dtype=np.float64)
-    B = np.zeros(n, dtype=np.float64)
-    C = np.zeros(n, dtype=np.float64)
+def eliminacion_gaussiana_tridiagonal(a, b, c, d):
+    n = a.shape[0]
+    A = np.zeros((n,n), dtype=np.float64)
 
-    # ai xi−1 + bi xi + ci xi+1 = di
-
-    # Armamos los vectores A B C
-    for i in range(n):
-        B[i] = T[i][i]
-        A[i] = 0 if i == 0 else T[i][i - 1]
-        C[i] = 0 if i == n - 1 else T[i][i + 1]
+    a0 = a.copy()
+    b0 = b.copy()
+    c0 = c.copy()
+    d0 = d.copy()
 
     # Resolvemos
     for i in range(1, n):
-        m = A[i] / B[i - 1]
-        L[i, i - 1] = m
-        A[i] = A[i] - m * B[i - 1]  # A_i - A_i / B_i-1 * B_i-1
-        B[i] = B[i] - m * C[i - 1]  # B_i - A_i / B_i-1 * C_i-1
-        b[i] = b[i] - m * b[i-1]
+        m = a0[i] / b0[i - 1]
+        a0[i] = a0[i] - m * b0[i - 1]  
+        b0[i] = b0[i] - m * c0[i - 1]               
+        d0[i] = d0[i] - m * d0[i-1]
 
     for i in range(n):
-        T[i][i] = B[i]
-        if (i >= 1): T[i][i - 1] = A[i]
-        if (i < n - 1): T[i][i + 1] = C[i]
-
+        A[i][i] = b0[i]
+        if (i >= 1): A[i][i - 1] = a0[i]
+        if (i < n - 1): A[i][i + 1] = c0[i]
     
-    return backward_substitution_tri(T, b)
+    return backward_substitution_tri(A, d0)
 
 # Factorización LU
 
@@ -196,6 +188,11 @@ def factorizar_LU_tri(T):
 def resolver_LU(L, U, b):
     y = forward_substitution(L, b)
     x = backward_substitution(U, y)
+    return x
+
+def resolver_LU_tri(L, U, b):
+    y = forward_substitution_tri(L, b)
+    x = backward_substitution_tri(U, y)
     return x
 
 # Laplaciano

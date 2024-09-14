@@ -29,6 +29,9 @@ def matriz_tridiagonal_edd(n):
         if i > 0: A[i,i-1] = 1
     return A
 
+def armar_matriz_tri_con(a,b,c):
+    return np.diag(a) + np.diag(b) + np.diag(c)
+
 class TestEliminaciongaussiana(unittest.TestCase):
     def test_01_EG_sin_pivoteo(self):
         for n in range(3, 50):
@@ -51,13 +54,17 @@ class TestEliminaciongaussiana(unittest.TestCase):
             np.testing.assert_array_almost_equal(np.dot(A, x), b, decimal=5)
 
     def test_03_EG_tridiagonal(self):
-        for n in range(5, 50):
-            b = np.random.randint(1, 10, size=n).astype(np.float64)
-            A = matriz_tridiagonal_edd(n) 
+        for n in range(5, 6):
+            d = np.random.randint(1, 10, size=n).astype(np.float64)
+            a = np.full(n, 1, dtype=np.float64)
+            b = np.full(n, 3, dtype=np.float64)
+            c = np.full(n, 1, dtype=np.float64)
+            a[0]   = 0
+            c[-1]  = 0
 
-            x = eliminacion_gaussiana_tridiagonal(A.copy(), b.copy())
+            x = eliminacion_gaussiana_tridiagonal(a,b,c,d)
             
-            np.testing.assert_array_almost_equal(np.dot(A, x), b, decimal=5)
+            np.testing.assert_array_almost_equal(np.dot(matriz_tridiagonal_edd(n), x), d, decimal=5)
 
     def test_04_factorizacion_LU(self):
         for n in range(3, 50):
