@@ -2,6 +2,7 @@ import unittest
 from desarrollo import *
 
 def matriz_valida_EG_sin_pivoteo(n):
+    np.random.seed(9)
     L = np.random.randint(1,2, size=(n,n)).astype(np.float64)
     U = np.random.randint(1,2, size=(n,n)).astype(np.float64)
     for i in range(n):
