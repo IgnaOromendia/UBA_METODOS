@@ -3,7 +3,6 @@ from desarrollo import *
 def explorar_error_numerico(lista_epsilons, fl):
     lista_resultados = []
     
-    
     for i in range(len(lista_epsilons)):
         eps = lista_epsilons[i]
         A = np.array([[1, 2+eps, 3-eps],
@@ -31,7 +30,7 @@ if __name__ == "__main__":
 
     log_space_values = np.logspace(np.log10(10**-6), np.log10(1), num=100)
     lista_epsilons =log_space_values
-    print(log_space_values)
+
     #lista_epsilons = np.arange(10**-6, 1, 10**-1)
     a = explorar_error_numerico(lista_epsilons, np.float64)
     b = explorar_error_numerico(lista_epsilons, np.float32)

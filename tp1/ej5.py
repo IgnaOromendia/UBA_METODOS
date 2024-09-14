@@ -12,6 +12,18 @@ def calcular_tiempo_avr(funcion_hacer_matriz,funcion_calcular_sistema, l, h, s, 
     
     return (time_avg/cant)
 
+def calcular_tiempo_max(funcion_hacer_matriz,funcion_calcular_sistema, l, h, s, cant):
+    time_list = []
+    for i in range(cant):
+        start_time = time.time()
+        funcion_hacer_matriz(l,h,s,funcion_calcular_sistema)
+        end_time = time.time() 
+        time_list.append(end_time-start_time)
+    
+    return max(time_list)
+
+
+
 def calcular_sistema_de_n_elementos(l, h, s, f):
   np.random.seed(9)
   A = matriz_valida_EG_sin_pivoteo(s)
@@ -53,8 +65,8 @@ def calcular_tiempos_naive_vs_pivoteo(l):
     tiempos_naive = []
     i = 0
     for s in l:
-        t2 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos,eliminacion_gaussiana_pivoteo, 1,20, s, 7)
-        t1 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos,eliminacion_gaussiana, 1,20, s, 7)
+        t2 =  calcular_tiempo_max(calcular_sistema_de_n_elementos,eliminacion_gaussiana_pivoteo, 1,20, s, 7)
+        t1 =  calcular_tiempo_max(calcular_sistema_de_n_elementos,eliminacion_gaussiana, 1,20, s, 7)
         tiempos_naive.append(t1)
         tiempos_pivoteo.append(t2)
         #print("Tiempo nainve: ", t1, " Tiempo pivoteo: ", t2, "para el tamaño: ", s)
@@ -67,8 +79,8 @@ def calcular_tiempos_naive_vs_tridiagonal(l):
     tiempos_trid = []
     i = 0
     for s in l:
-        t1 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos_tridiagonal_para_matriz,eliminacion_gaussiana, 1, 20, s, 7)
-        t2 =  calcular_tiempo_avr(calcular_sistema_de_n_elementos_tridiagonal_para_vectores,eliminacion_gaussiana_tridiagonal, 10**-3,10**3, s, 7) #TODO CAMBIAR EL 3
+        t1 =  calcular_tiempo_max(calcular_sistema_de_n_elementos_tridiagonal_para_matriz,eliminacion_gaussiana, 1, 20, s, 7)
+        t2 =  calcular_tiempo_max(calcular_sistema_de_n_elementos_tridiagonal_para_vectores,eliminacion_gaussiana_tridiagonal, 10**-3,10**3, s, 7) #TODO CAMBIAR EL 3
         
         tiempos_naive.append(t1)
         tiempos_trid.append(t2)
@@ -97,7 +109,7 @@ def calcular_tiempos_trid_vs_precomputo_trdi(s, n):
     for i in range(n):
         if i == 0:
             start_time = time.time()
-            L,U = factorizar_LU_tri(A)
+            L,U = factorizar_LU_tri(a,b,c)
             y = forward_substitution_tri(L, d)
             x = backward_substitution_tri(U,y)
             end_time = time.time()
@@ -114,7 +126,7 @@ def calcular_tiempos_trid_vs_precomputo_trdi(s, n):
 if __name__ == "__main__":
     a = []
     b = 2
-    for i in range(9):
+    for i in range(6):
         i+=1
         b = 2**i
         a.append(b)
@@ -154,7 +166,7 @@ if __name__ == "__main__":
     plt.ylabel('Tiempo en segundos')
     plt.xlabel('Tamaño de la matriz')
     plt.xscale("log", base=2)
-    #plt.yscale("log")
+    plt.yscale("log")
     plt.legend()
     plt.savefig('graficos/naive_vs_pivoteo.png')
     plt.show()
