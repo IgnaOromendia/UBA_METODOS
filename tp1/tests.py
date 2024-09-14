@@ -83,18 +83,23 @@ class TestEliminaciongaussiana(unittest.TestCase):
 
     def test_05_factorizacion_LU_tridiagonal(self):
         for n in range(3, 50):
-            A = matriz_tridiagonal_edd(n) 
+            A = matriz_tridiagonal_edd(n)
+            a = np.full(n, 1, dtype=np.float64)
+            b = np.full(n, 3, dtype=np.float64)
+            c = np.full(n, 1, dtype=np.float64)
+            a[0]   = 0
+            c[-1]  = 0
 
-            L, U = factorizar_LU_tri(A.copy())
+            L, U = factorizar_LU_tri(a,b,c)
 
             np.testing.assert_array_almost_equal(np.dot(L, U), A, decimal=5)
 
             for _ in range(5):
-                b = np.random.randint(1, 10, size=n).astype(np.float64)
+                d = np.random.randint(1, 10, size=n).astype(np.float64)
 
-                x = resolver_LU(L,U,b)
+                x = resolver_LU_tri(L,U,d)
 
-                np.testing.assert_array_almost_equal(np.dot(A, x), b, decimal=5)
+                np.testing.assert_array_almost_equal(np.dot(A, x), d, decimal=5)
 
 if __name__ == "__main__":
     unittest.main()

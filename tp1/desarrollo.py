@@ -156,34 +156,28 @@ def factorizar_LU(T):
 
     return L, A0
 
-def factorizar_LU_tri(T):
-    n = T.shape[0]
+def factorizar_LU_tri(a,b,c):
+    n = a.shape[0]
     L = np.eye(n, dtype=np.float64)
-    A = np.zeros(n, dtype=np.float64)
-    B = np.zeros(n, dtype=np.float64)
-    C = np.zeros(n, dtype=np.float64)
+    U = np.zeros((n,n), dtype=np.float64)
 
-    # ai xi−1 + bi xi + ci xi+1 = di
-
-    # Armamos los vectores A B C
-    for i in range(n):
-        B[i] = T[i][i]
-        A[i] = 0 if i == 0 else T[i][i - 1]
-        C[i] = 0 if i == n - 1 else T[i][i + 1]
+    a0 = a.copy()
+    b0 = b.copy()
+    c0 = c.copy()
 
     # Resolvemos
     for i in range(1, n):
-        coeficiente = A[i] / B[i - 1]
-        L[i, i - 1] = coeficiente
-        A[i] = A[i] - coeficiente * B[i - 1]  # A_i - A_i / B_i-1 * B_i-1
-        B[i] = B[i] - coeficiente * C[i - 1]  # B_i - A_i / B_i-1 * C_i-1
+        m = a0[i] / b0[i - 1]
+        L[i,i-1] = m 
+        a0[i] = a0[i] - m * b0[i - 1]  
+        b0[i] = b0[i] - m * c0[i - 1]
 
     for i in range(n):
-        T[i][i] = B[i]
-        if (i >= 1): T[i][i - 1] = A[i]
-        if (i < n - 1): T[i][i + 1] = C[i]
+        U[i,i] = b0[i]
+        if (i >= 1): U[i,i - 1] = a0[i]
+        if (i < n - 1): U[i,i + 1] = c0[i]
 
-    return L, T
+    return L, U
 
 def resolver_LU(L, U, b):
     y = forward_substitution(L, b)
@@ -194,6 +188,12 @@ def resolver_LU_tri(L, U, b):
     y = forward_substitution_tri(L, b)
     x = backward_substitution_tri(U, y)
     return x
+
+def diagonales(A):
+    a = np.insert(np.diag(A,k=-1),0,0)
+    b = np.diag(A,k=0)
+    c = np.append(np.diag(A,k=1),0)
+    return a, b, c
 
 # Laplaciano
 
@@ -237,19 +237,14 @@ def verificar_implementacion_tri(n):
     d2 = generar_d2(n)
     d3 = generar_d3(n)
 
-    # Matriz laplaciana
-    A = generar_laplaciano(n)
+    # Matriz trifiagonal laplaciana
+    a,b,c = diagonales(generar_laplaciano(n))
 
-    L, U = factorizar_LU_tri(A.copy())
+    L, U = factorizar_LU_tri(a,b,c)
 
-    y = forward_substitution_tri(L, d1)
-    u1 = backward_substitution_tri(U, y)
-
-    y = forward_substitution_tri(L, d2)
-    u2 = backward_substitution_tri(U, y)
-
-    y = forward_substitution_tri(L, d3)
-    u3 = backward_substitution_tri(U, y)
+    u1 = resolver_LU_tri(L,U,d1)
+    u2 = resolver_LU_tri(L,U,d2)
+    u3 = resolver_LU_tri(L,U,d3)
 
     tams = [i for i in range(n)]
 
@@ -273,19 +268,16 @@ def generar_u0(n, r):
 
     return u
 
-def generar_u0_2d(n):
-    u = np.zeros((n, n), dtype=np.float64)
-    u[(n // 2), (n // 2)] = 100
-    return u
-
 def calcular_difusion(A, r, m):
     n = A.shape[0]
     u = [generar_u0(n, r)]
 
-    L, U = factorizar_LU_tri(A.copy())
+    a,b,c = diagonales(A)
+
+    L, U = factorizar_LU_tri(a,b,c)
 
     for k in range(1, m):
-        uk = resolver_LU(L, U, u[k-1])
+        uk = resolver_LU_tri(L, U, u[k-1])
         u.append(uk)
 
     return np.array(u)
@@ -306,9 +298,13 @@ def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
     plt.title(f'Mapa de calor')
     plt.xlabel('k')
     plt.ylabel('x')
-    plt.show()
+    plt.savefig("graficos/mapa_de_calor.png", format="PNG", bbox_inches='tight')
 
 # Difusión 2D
+def generar_u0_2d(n):
+    u = np.zeros((n, n), dtype=np.float64)
+    u[(n // 2), (n // 2)] = 100
+    return u
 
 def calcular_difusion_2d(A, m):
     n = A.shape[0]
@@ -353,6 +349,3 @@ if __name__ == "__main__":
     # plot_diffusion_evolution()
     # plot_diffusion_evolution_2D(1, 3, 1, 100)
     # verificar_implementacion_tri(101)
-    L,U = factorizar_LU_tri(generar_laplaciano(3))
-    print(L)
-    print(U)
