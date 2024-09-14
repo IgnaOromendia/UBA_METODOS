@@ -11,7 +11,7 @@ def backward_substitution(A, b):
 
     for i in range(n - 1, -1, -1):
         suma = 0
-        for j in range(i, n): 
+        for j in range(i, n):
             suma += A[i, j] * x[j]
         x[i] = (b[i] - suma) / A[i, i]
 
@@ -24,7 +24,8 @@ def forward_substitution(A, b):
 
     for i in range(n):
         suma = 0
-        for j in range(0, i): suma += A[i, j] * x[j]
+        for j in range(0, i):
+            suma += A[i, j] * x[j]
         x[i] = (b[i] - suma) / A[i, i]
 
     return x
@@ -39,9 +40,9 @@ def eliminacion_gaussiana(A, b):
     b0 = b.copy()
 
     for i in range(0, n):
-        if A[i,i] == 0: print("AAAA!") #TODO 
+        if A[i, i] == 0: print("AAAA!")  #TODO
         for j in range(i + 1, n):
-            m = A0[j, i] / A0[i, i]  
+            m = A0[j, i] / A0[i, i]
             b0[j] = b0[j] - (m * b0[i])  # aplicar a b
             for k in range(i, n):
                 A0[j, k] = A0[j, k] - (m * A0[i, k])
@@ -61,7 +62,6 @@ def permutar_elementos_vector(A, i, j):
     A[j] = copia
 
 
-
 def encontrar_pivote(A, i):
     max = abs(A[i, i])
     fila = i
@@ -74,7 +74,6 @@ def encontrar_pivote(A, i):
             max = abs(A[k, i])
     # Devolvemos la fila
     return fila
-
 
 
 def eliminacion_gaussiana_pivoteo(A, b):
@@ -94,7 +93,6 @@ def eliminacion_gaussiana_pivoteo(A, b):
                 A0[j][k] = A0[j][k] - (m * A0[i][k])
 
     return backward_substitution(A0, b0)
-
 
 
 def eliminacion_gaussiana_tridiagonal(T, b):
@@ -143,8 +141,11 @@ def factorizar_LU(T):
             for k in range(i, n):
                 A0[j, k] = A0[j, k] - (m * A0[i, k])
 
-    return L, A0
+    for i in range(0, n):
+        for j in range(0, i):
+            A0[i][j] = 0
 
+    return L, A0
 
 
 def factorizar_LU_tri(T):
@@ -188,15 +189,20 @@ def generar_laplaciano(n):
 
 
 def generar_laplaciano_2d(n):
-    T = np.zeros((n,n), dtype=np.float64)
+    T = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
-        T[i][i] = -4
-        if i != n-1 and (i+1)%3 != 0: T[i][i+1] = 1
-        if i != 0 and (i)%3 != 0: T[i][i-1] = 1
-        if i <= n-4: T[i][i+3] = 1
-        if i >= 3: T[i][i-3] = 1
+        T[i, i] = -4
+        if i != n - 1 and (i + 1) % 3 != 0:
+            T[i, i + 1] = 1
+        if i != 0 and i % 3 != 0:
+            T[i, i - 1] = 1
+        if i <= n - 4:
+            T[i, i + 3] = 1
+        if i >= 3:
+            T[i, i - 3] = 1
 
     return T
+
 
 def generar_d1(n):
     d = np.zeros(n, dtype=np.float64)
@@ -257,10 +263,11 @@ def generar_u0(n, r):
     return u
 
 
-def generar_u0_2d(n, r):
-    u = np.zeros((n,n), dtype=np.float64)
-    u[(n//2) , (n//2) ] = 100
+def generar_u0_2d(n):
+    u = np.zeros((n, n), dtype=np.float64)
+    u[(n // 2), (n // 2)] = 100
     return u
+
 
 def calcular_difusion(A, r, m):
     n = A.shape[0]
@@ -269,54 +276,58 @@ def calcular_difusion(A, r, m):
     L, U = factorizar_LU_tri(A.copy())
 
     for k in range(1, m):
-        y = forward_substitution(L, u[k - 1])
-        uk = backward_substitution(U, y)
+        uk = resolver_LU(L, U, u[k-1])
         u.append(uk)
 
     return np.array(u)
 
-def calcular_difusion_2d(A, r, m):
+
+def resolver_LU(L, U, x):
+    y = forward_substitution(L, x)
+    uk = backward_substitution(U, y)
+    return uk
+
+
+def calcular_difusion_2d(A, m):
     n = A.shape[0]
     sn = int(np.sqrt(n))
-    u = [generar_u0_2d(sn, r)]
-    print(sn)
-    print(u[0].shape[0])
-    plt.imshow(A)
-    plt.show()
+    u = [generar_u0_2d(sn)]
     L, U = factorizar_LU(A.copy())
     for k in range(1, m):
         y = forward_substitution(L, u[k - 1].flatten())
         uk = backward_substitution(U, y)
-        uk[n//2] = 100
         # TODO Bordes
-        # uk[0:n]
-        u.append(uk.reshape(sn,sn))
+        uk = uk.reshape(sn, sn)
+        uk[sn // 2, sn // 2] = 100
+        uk[:, 0] = 0
+        uk[:, sn - 1] = 0
+        uk[0, :] = 0
+        uk[sn - 1, :] = 0
+        u.append(uk)
 
     return np.array(u)
-    
+
 
 def simular_difusion_2d(alfa, n, r, m):
-    T = generar_laplaciano_2d(n*n)
+    T = generar_laplaciano_2d(n * n)
 
-    A = np.eye(n*n, dtype=np.float64) - alfa * T
+    A = np.eye(n * n, dtype=np.float64) - alfa * T
 
-    difusiones_2d = calcular_difusion_2d(A, r, m)
+    difusiones_2d = calcular_difusion_2d(A, m)
 
     return difusiones_2d
 
-def plot_diffusion_evolution(alfa = 1, n = 101, r = 10, m = 1000):
+
+def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
     difusiones = simular_difusion_2d(alfa, n, r, m)
-    print("difusiones", difusiones.shape )
-    plt.pcolor(difusiones[50], cmap='hot')
+    print("difusiones", difusiones.shape)
+    #plt.pcolor(difusiones[50], cmap='hot')
     plt.colorbar(label='u')
     plt.title(f'Mapa de calor')
     plt.xlabel('k')
     plt.ylabel('x')
-    plt.show()
-        
 
 if __name__ == "__main__":
     print("TP1")
     #simular_difusion_2d(0.1, 15, 1, 100)
-    plot_diffusion_evolution(0.25, 4, 1, 100)
-
+    plot_diffusion_evolution(1, 3, 1, 100)
