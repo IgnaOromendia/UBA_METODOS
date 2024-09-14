@@ -293,9 +293,10 @@ def calcular_difusion_2d(A, m):
     sn = int(np.sqrt(n))
     u = [generar_u0_2d(sn)]
     L, U = factorizar_LU(A.copy())
+    assert(np.allclose(np.dot(L, U), A))
     for k in range(1, m):
-        y = forward_substitution(L, u[k - 1].flatten())
-        uk = backward_substitution(U, y)
+        uk = resolver_LU(L, U, u[k-1].flatten())
+        assert(np.allclose(np.dot(A, uk), u[k-1].flatten()))
         # TODO Bordes
         uk = uk.reshape(sn, sn)
         uk[sn // 2, sn // 2] = 100
@@ -305,7 +306,7 @@ def calcular_difusion_2d(A, m):
         uk[sn - 1, :] = 0
         u.append(uk)
 
-    return np.array(u)
+    return u
 
 
 def simular_difusion_2d(alfa, n, r, m):
@@ -320,14 +321,15 @@ def simular_difusion_2d(alfa, n, r, m):
 
 def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
     difusiones = simular_difusion_2d(alfa, n, r, m)
-    print("difusiones", difusiones.shape)
-    #plt.pcolor(difusiones[50], cmap='hot')
+    print("difusiones", len(difusiones))
+    plt.pcolor(difusiones[50], cmap='hot')
     plt.colorbar(label='u')
     plt.title(f'Mapa de calor')
     plt.xlabel('k')
     plt.ylabel('x')
+    plt.show()
 
 if __name__ == "__main__":
     print("TP1")
     #simular_difusion_2d(0.1, 15, 1, 100)
-    plot_diffusion_evolution(1, 3, 1, 100)
+    plot_diffusion_evolution(1, 15, 1, 100)
