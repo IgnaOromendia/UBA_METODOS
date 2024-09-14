@@ -39,9 +39,11 @@ if __name__ == "__main__":
     plt.plot(lista_epsilons, a, 'o',color = 'blue', label="64bits")
     plt.plot(lista_epsilons, b,'o',color = 'red', label="32bits")
     
-    #plt.ylabel('Tiempo en segundos')
-    #plt.xlabel('Cant de iteraciones')
+    plt.ylabel('Error numerico')
+    plt.xlabel('Epsilon')
     plt.xscale("log")
     plt.yscale("log")
+
+    plt.savefig('graficos/grafico_error_numerico.png')
     plt.legend()
     plt.show()
