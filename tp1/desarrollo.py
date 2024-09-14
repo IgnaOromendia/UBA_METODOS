@@ -221,23 +221,6 @@ def generar_laplaciano(n):
     return T
 
 
-def generar_laplaciano_2d(n):
-    T = np.zeros((n, n), dtype=np.float64)
-    sn = int(np.sqrt(n))
-    for i in range(n):
-        T[i, i] = -4
-        if i != n - 1 and (i + 1) % sn != 0:
-            T[i, i + 1] = 1
-        if i != 0 and i % sn != 0:
-            T[i, i - 1] = 1
-        if i <= n - sn - 1:
-            T[i, i + sn] = 1
-        if i >= sn:
-            T[i, i - sn] = 1
-
-    return T
-
-
 def generar_d1(n):
     d = np.zeros(n, dtype=np.float64)
     d[n // 2 + 1] = 4 / n
@@ -318,44 +301,53 @@ def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
 
 
 # Difusión 2D
+def generar_laplaciano_2d(n, u_n):
+    T = np.zeros((n, n), dtype=np.float64)
+    u_n = int(np.sqrt(n))
+    for i in range(n):
+        T[i, i] = -4
+        if i != n - 1 and (i + 1) % u_n != 0:
+            T[i, i + 1] = 1
+        if i != 0 and i % u_n != 0:
+            T[i, i - 1] = 1
+        if i <= n - u_n - 1:
+            T[i, i + u_n] = 1
+        if i >= u_n:
+            T[i, i - u_n] = 1
+
+    return T
+
 def generar_u0_2d(n):
     u = np.zeros((n, n), dtype=np.float64)
     u[(n // 2), (n // 2)] = 100
     return u
 
+def mantener_constantes(uk, n):
+    uk[n // 2, n // 2] = 100
+    uk[:, 0] = 0
+    uk[:, n - 1] = 0
+    uk[0, :] = 0
+    uk[n - 1, :] = 0
+    return uk
 
-def calcular_difusion_2d(A, m):
-    n = A.shape[0]
-    sn = int(np.sqrt(n))
-    u = [generar_u0_2d(sn)]
+def simular_difusion_2d(alfa, n, m):
+    A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2d(n * n, n)
+
+    u = [generar_u0_2d(n)]
+
     L, U = factorizar_LU(A.copy())
-    assert (np.allclose(np.dot(L, U), A))
+
     for k in range(1, m):
         uk = resolver_LU(L, U, u[k - 1].flatten())
-        assert (np.allclose(np.dot(A, uk), u[k - 1].flatten()))
-        # TODO Bordes
-        uk = uk.reshape(sn, sn)
-        uk[sn // 2, sn // 2] = 100
-        uk[:, 0] = 0
-        uk[:, sn - 1] = 0
-        uk[0, :] = 0
-        uk[sn - 1, :] = 0
-        u.append(uk)
+        uk = uk.reshape(n, n)
+        u.append(mantener_constantes(uk,n))
 
     return u
 
 
-def simular_difusion_2d(alfa, n, m):
-    A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2d(n * n)
-
-    difusiones_2d = calcular_difusion_2d(A, m)
-
-    return difusiones_2d
-
-
-def plot_diffusion_evolution_2D(alfa=1, n=101, m=1000):
+def plot_diffusion_evolution_2D(alfa=0.1, n=15, m=100, t=50):
     difusiones = simular_difusion_2d(alfa, n, m)
-    plt.pcolor(difusiones[50], cmap='hot')
+    plt.pcolor(difusiones[t], cmap='hot')
     plt.colorbar(label='u')
     plt.title(f'Mapa de calor')
     plt.xlabel('k')
@@ -364,5 +356,5 @@ def plot_diffusion_evolution_2D(alfa=1, n=101, m=1000):
 
 
 if __name__ == "__main__":
-    plot_diffusion_evolution()
-    # plot_diffusion_evolution_2D(1, 15, 100)
+    # plot_diffusion_evolution()
+    plot_diffusion_evolution_2D()
