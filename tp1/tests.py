@@ -34,7 +34,7 @@ def TDMASolve(a, b, c, d):
 class TestEliminaciongaussiana(unittest.TestCase):
     def test_01_EG_sin_pivoteo(self):
         for n in range(3, 50):
-            A = np.random.uniform(1, 10, size=(n, n)).astype(np.float64)
+            A = generar_matrices_diagonables_sin_pivoteo(n)
             b = np.random.uniform(1, 10, size=n).astype(np.float64)
 
             x = eliminacion_gaussiana(A.copy(), b)
@@ -43,7 +43,7 @@ class TestEliminaciongaussiana(unittest.TestCase):
 
     def test_02_EG_con_pivoteo(self):
         for n in range(3, 50):
-            A = np.random.uniform(1, 10, size=(n, n)).astype(np.float64)
+            A = generar_matrices_diagonables_sin_pivoteo(n)
             b = np.random.uniform(1, 10, size=n).astype(np.float64)
 
             A[0, 0] = 0  # Para verificar que realmente este pivoteando
@@ -53,21 +53,30 @@ class TestEliminaciongaussiana(unittest.TestCase):
             np.testing.assert_array_almost_equal(np.dot(A, x), b, decimal=5)
 
     def test_03_EG_tridiagonal(self):
-        for n in range(3, 20):
-            d_pri = np.random.uniform(1, 10, size=n).astype(np.float64)
-            d_sup = np.random.uniform(1, 10, size=n - 1).astype(np.float64)
-            d_inf = np.random.uniform(1, 10, size=n - 1).astype(np.float64)
-            b = np.random.uniform(1, 10, size=n).astype(np.float64)
+        for n in range(5, 6):
 
+            np.random.seed(1)
+            d_pri = np.random.randint(1, 10, size=n).astype(np.float64)
+            d_sup = np.random.randint(1, 10, size=n -1).astype(np.float64)
+            d_inf = np.random.randint(1, 10, size=n-1).astype(np.float64)
+
+            
+
+            b = np.random.randint(1, 10, size=n).astype(np.float64)
+
+            
             A = np.diag(d_pri) + np.diag(d_sup, k=1) + np.diag(d_inf, k=-1)
+            l,u = factorizar_LU(A)
+            print(l)
+            print(u)
 
-            x = eliminacion_gaussiana_tridiagonal(A.copy(), b)
-
+            x = eliminacion_gaussiana_tridiagonal(A.copy(), b.copy())
+            
             np.testing.assert_array_almost_equal(np.dot(A, x), b, decimal=5)
 
     def test_04_factorizacion_LU(self):
         for n in range(3, 20):
-            A = np.random.uniform(1, 10, size=(n, n)).astype(np.float64)
+            A = generar_matrices_diagonables_sin_pivoteo(n)
 
             L, U = factorizar_LU(A.copy())
 

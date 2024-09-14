@@ -33,6 +33,17 @@ def forward_substitution(A, b):
 
 # Eliminacion Gaussiana
 
+def generar_matrices_diagonables_sin_pivoteo(n): #TODO porner esta funcion en el lugar correcto
+    L = np.random.uniform(1,2, size=(n,n))
+    U = np.random.uniform(1,2, size=(n,n))
+    for i in range(n):
+        L[i,i] = 1
+        for j in range(i+1, n):
+            L[i,j] = 0
+            U[j,i] = 0
+    r = (L@U).astype(np.float64) #TODO pregunrtar si hace falta hacer nosotros la mult de matrices
+    return r
+
 def eliminacion_gaussiana(A, b):
     m = 0
     n = A.shape[0]
@@ -92,6 +103,7 @@ def eliminacion_gaussiana_pivoteo(A, b):
             for k in range(i, n):
                 A0[j][k] = A0[j][k] - (m * A0[i][k])
 
+    
     return backward_substitution(A0, b0)
 
 
@@ -116,12 +128,14 @@ def eliminacion_gaussiana_tridiagonal(T, b):
         L[i, i - 1] = m
         A[i] = A[i] - m * B[i - 1]  # A_i - A_i / B_i-1 * B_i-1
         B[i] = B[i] - m * C[i - 1]  # B_i - A_i / B_i-1 * C_i-1
+        b[i] = b[i] - m * b[i-1]
 
     for i in range(n):
         T[i][i] = B[i]
         if (i >= 1): T[i][i - 1] = A[i]
         if (i < n - 1): T[i][i + 1] = C[i]
 
+    
     return backward_substitution(T, b)
 
 
