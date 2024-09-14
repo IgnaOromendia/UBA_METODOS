@@ -310,9 +310,7 @@ def calcular_difusion(A, r, m):
 
 
 def simular_difusion(alfa, n, r, m):
-    T = generar_laplaciano(n)
-
-    A = np.eye(n, dtype=np.float64) - alfa * T
+    A = np.eye(n, dtype=np.float64) - alfa * generar_laplaciano(n)
 
     difusiones = calcular_difusion(A, r, m)
 
@@ -358,9 +356,7 @@ def calcular_difusion_2d(A, m):
 
 
 def simular_difusion_2d(alfa, n, m):
-    T = generar_laplaciano_2d(n * n)
-
-    A = np.eye(n * n, dtype=np.float64) - alfa * T
+    A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2d(n * n)
 
     difusiones_2d = calcular_difusion_2d(A, m)
 
@@ -378,4 +374,5 @@ def plot_diffusion_evolution_2D(alfa=1, n=101, m=1000):
 
 
 if __name__ == "__main__":
-    plot_diffusion_evolution_2D(1, 15, 100)
+    plot_diffusion_evolution()
+    # plot_diffusion_evolution_2D(1, 15, 100)
