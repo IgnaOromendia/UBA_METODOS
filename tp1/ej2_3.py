@@ -15,26 +15,12 @@ def explorar_error_numerico(lista_epsilons, fl):
 
     return lista_resultados
 
-def hacer_lista_eps():
-        eps = 1
-        for i in range(10**5):
-             eps = eps - 10**-6
-        print(eps)
-
-
 
 if __name__ == "__main__":
-    #hacer_lista_eps()
-    #exponents = np.linspace(-6, 0, num=10, endpoint=False)
-    #powers_of_ten = 10 ** exponents
-
-    log_space_values = np.logspace(np.log10(10**-6), np.log10(1), num=100)
-    lista_epsilons =log_space_values
-
-    #lista_epsilons = np.arange(10**-6, 1, 10**-1)
+    lista_epsilons = np.logspace(np.log10(10**-6), np.log10(1), num=100)
+    
     a = explorar_error_numerico(lista_epsilons, np.float64)
     b = explorar_error_numerico(lista_epsilons, np.float32)
-
     
     plt.plot(lista_epsilons, a, 'o',color = 'blue', label="64bits")
     plt.plot(lista_epsilons, b,'o',color = 'red', label="32bits")
@@ -43,6 +29,7 @@ if __name__ == "__main__":
     plt.xlabel('Epsilon')
     plt.xscale("log")
     plt.yscale("log")
+    plt.title("Error numerico en funcion del epsilon")
 
     plt.savefig('graficos/grafico_error_numerico.png')
     plt.legend()
