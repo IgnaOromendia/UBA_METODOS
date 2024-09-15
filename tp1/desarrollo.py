@@ -137,11 +137,10 @@ def eliminacion_gaussiana_tridiagonal(a, b, c, d):
 
    
     x = np.zeros(n)
-    x [-1] = d0[-1]/n
-
+    
     for i in range(-1, -n-1, -1):
         x[i] = (d0[i]-(c0[i]*x[i+1]))/b0[i]
-
+    
     return x
 
 
