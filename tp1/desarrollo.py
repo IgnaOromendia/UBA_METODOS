@@ -293,8 +293,6 @@ def plot_diffusion_evolution(alfas, n=101, r=10, m=1000):
     fig, axs = plt.subplots(2,2)
     axs = axs.flatten()
 
-    fig.suptitle("Simulación de difusión para distintos alfas")
-
     for i,alfa in enumerate(alfas):
         difusiones = simular_difusion(alfa, n, r, m)
         color = axs[i].pcolor(difusiones.T, cmap='hot')
