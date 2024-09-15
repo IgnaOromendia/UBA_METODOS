@@ -3,7 +3,6 @@ import sys
 import time
 from tests import *
 
-
 def comparar_tiempo_pivoteo_vs_tridiagonal(lista_size, cant_repeticiones):
     tiempo_pivoteo = []
     tiempo_tridiagonal = []
@@ -152,90 +151,7 @@ def plot_diffusion_evolution(alfas, n=101, r=10, m=1000):
     plt.tight_layout()
     plt.savefig("graficos/mapas_de_calor.png", format="PNG", bbox_inches='tight')
 
-if __name__ == "__main__":
-    #plot_diffusion_evolution(alfas=[0.1,0.3,0.6,1])
-    # plot_diffusion_evolution_2D(0.1, 15, 100, [0,9,49,99])
-
-    # lista_de_size = []
-    # limite_tam_matrices = 7
-    #
-    # for i in range(limite_tam_matrices):
-    #     b = 2 ** i + 1
-    #     lista_de_size.append(b)
-    #
-    # size = 50
-    # cant_repeticiones = 10
-    # cant_veces_calcular_tridiagonal = 2 ** 10
-    #
-    # t_pivoteo, t_tridiagonal = comparar_tiempo_pivoteo_vs_tridiagonal(lista_de_size, cant_repeticiones)
-    # t_tridiagonal2, t_pre_tridiagonal = calcular_tiempos_trid_vs_precomputo_trdi(size, cant_veces_calcular_tridiagonal,
-    #                                                                              cant_repeticiones)
-    # TODO Comparar todos los algoritmos de eliminacion gaussian con matrices arbitrarias
-    # - Naive sin pivoteo
-    # - Con Pivoteo
-    # - Factorizacion LU
-    # Creo las matrices usando factorizaciones LU para garantizar
-    n = list(np.power(2, np.arange(9)))
-    tiempo_naive = []
-    tiempo_pivoteo = []
-    tiempo_LU = []
-    for i in range(len(n)):
-        A = matriz_valida_EG_sin_pivoteo(n[i])
-        b = np.random.randint(1, 10, n[i])
-
-        start_time = time.time()
-        eliminacion_gaussiana(A, b)
-        end_time = time.time()
-        tiempo_naive.append(end_time - start_time)
-
-        start_time = time.time()
-        eliminacion_gaussiana_pivoteo(A, b)
-        end_time = time.time()
-        tiempo_pivoteo.append(end_time - start_time)
-
-        start_time = time.time()
-        L, U = factorizar_LU(A)
-        resolver_LU(L, U, b)
-        end_time = time.time()
-        tiempo_LU.append(end_time - start_time)
-
-    # Printeo los tiempos
-    for i in range(len(n)):
-        print(tiempo_naive[i])
-        print(tiempo_pivoteo[i])
-        print(tiempo_LU[i])
-    plt.plot(n, tiempo_naive, color='blue', label='Eliminacion Gaussiana Naive')
-    plt.plot(n, tiempo_pivoteo, color='red', label='Eliminacion Pivoteo')
-    plt.plot(n, tiempo_LU, color='green', label='Eliminacion con LU')
-    plt.ylabel('Tiempo en segundos')
-    plt.xlabel('Tamaño de la matriz')
-    plt.xscale("log", base=2)
-    plt.yscale("log", base=10)
-    plt.legend()
-    plt.show()
-    sys.exit()
-
-    plt.plot(lista_de_size, t_pivoteo, color='blue', label='Eliminacion con pivoteo')
-    plt.plot(lista_de_size, t_tridiagonal, color='red', label='Eliminacion tridiagonal')
-    plt.ylabel('Tiempo en segundos')
-    plt.xlabel('Tamaño de la matriz')
-    plt.xscale("log", base=2)
-    plt.yscale("log")
-    plt.legend()
-    plt.savefig('graficos/tridiagonal_vspivoteo.png')
-    plt.show()
-
-    plt.plot([i for i in range(cant_veces_calcular_tridiagonal)], t_tridiagonal2, color='blue',
-             label='Eliminacion tridiagonal')
-    plt.plot([i for i in range(cant_veces_calcular_tridiagonal)], t_pre_tridiagonal, color='red',
-             label='Eliminacion tridiagonal con precomputo')
-    plt.ylabel('Tiempo en segundos')
-    plt.xlabel('Cantidad de soluciones buscadas')
-    plt.xscale("log", base=2)
-    plt.legend()
-    plt.savefig('graficos/tridiagonal_vs_precomputo_tridiagonal.png')
-    plt.show()
-
+def plot_error_numerico():
     lista_epsilons = np.logspace(np.log10(10 ** -6), np.log10(1), num=100)
 
     a = explorar_error_numerico(lista_epsilons, np.float64)
@@ -249,7 +165,74 @@ if __name__ == "__main__":
     plt.xscale("log")
     plt.yscale("log")
     plt.title("Error numerico en funcion del epsilon")
-
-    plt.savefig('graficos/grafico_error_numerico.png')
     plt.legend()
+    plt.savefig('graficos/grafico_error_numerico.png')
     plt.show()
+    
+def plot_tridiagonal_vs_precomputo():
+    lista_de_size = []
+    limite_tam_matrices = 7
+    
+    for i in range(limite_tam_matrices):
+        b = 2 ** i + 1
+        lista_de_size.append(b)
+
+    size = 50
+    cant_repeticiones = 10
+    cant_veces_calcular_tridiagonal = 2 ** 10
+
+    t_tridiagonal2, t_pre_tridiagonal = calcular_tiempos_trid_vs_precomputo_trdi(size, cant_veces_calcular_tridiagonal, cant_repeticiones)
+
+    t_tridiagonal2 = [i * 1000 for i in t_tridiagonal2]
+    t_pre_tridiagonal = [i * 1000 for i in t_pre_tridiagonal]
+
+    plt.plot([i for i in range(cant_veces_calcular_tridiagonal)], t_tridiagonal2, color='blue', label='Eliminacion tridiagonal')
+    plt.plot([i for i in range(cant_veces_calcular_tridiagonal)], t_pre_tridiagonal, color='red', label='Eliminacion tridiagonal con precomputo')
+    
+    plt.ylabel('Tiempo en milisegundos')
+    plt.xlabel('Cantidad de soluciones buscadas')
+    plt.yscale("log",base=10)
+    plt.xscale("log", base=2)
+    plt.legend()
+    plt.savefig('graficos/tridiagonal_vs_precomputo_tridiagonal.png')
+    plt.show()
+
+def plot_pivoteo_vs_tridiagonal():
+    lista_de_size = []
+    limite_tam_matrices = 7
+    
+    for i in range(limite_tam_matrices):
+        b = 2 ** i + 1
+        lista_de_size.append(b)
+    
+    size = 50
+    cant_repeticiones = 10
+    cant_veces_calcular_tridiagonal = 2 ** 10
+    
+    t_pivoteo, t_tridiagonal = comparar_tiempo_pivoteo_vs_tridiagonal(lista_de_size, cant_repeticiones)
+    
+
+    plt.plot(lista_de_size, t_pivoteo, color='blue', label='Eliminacion con pivoteo')
+    plt.plot(lista_de_size, t_tridiagonal, color='red', label='Eliminacion tridiagonal')
+    plt.ylabel('Tiempo en segundos')
+    plt.xlabel('Tamaño de la matriz')
+    plt.xscale("log", base=2)
+    plt.yscale("log")
+    plt.legend()
+    plt.savefig('graficos/tridiagonal_vspivoteo.png')
+    plt.show()
+
+if __name__ == "__main__":
+    print("Experimentando...")
+    # plot_diffusion_evolution(alfas=[0.1,0.3,0.6,1])
+    # plot_diffusion_evolution_2D(0.1, 15, 100, [0,9,49,99])
+    # plot_error_numerico()
+    # plot_tridiagonal_vs_precomputo()
+    # plot_pivoteo_vs_tridiagonal()
+    
+
+    
+
+    
+
+    
