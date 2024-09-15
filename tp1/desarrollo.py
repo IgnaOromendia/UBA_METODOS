@@ -237,31 +237,6 @@ def generar_d3(n):
     return d
 
 
-def verificar_implementacion_tri(n):
-    d1 = generar_d1(n)
-    d2 = generar_d2(n)
-    d3 = generar_d3(n)
-
-    # Matriz trifiagonal laplaciana
-    a, b, c = diagonales(generar_laplaciano(n))
-
-    L, U = factorizar_LU_tri(a, b, c)
-
-    u1 = resolver_LU_tri(L, U, d1)
-    u2 = resolver_LU_tri(L, U, d2)
-    u3 = resolver_LU_tri(L, U, d3)
-
-    tams = [i for i in range(n)]
-
-    plt.plot(tams, u1, label="(a)", color="steelblue")
-    plt.plot(tams, u2, label="(b)", color="peru")
-    plt.plot(tams, u3, label="(c)", color="forestgreen")
-    plt.xlabel("x")
-    plt.ylabel("u")
-    plt.legend()
-    plt.savefig("graficos/verificacion_triangular.png", format="PNG", bbox_inches='tight')
-
-
 # Difusión
 
 def generar_u0(n, r):
@@ -287,24 +262,6 @@ def simular_difusion(alfa, n, r, m):
         u.append(uk)
 
     return np.array(u)
-
-
-def plot_diffusion_evolution(alfas, n=101, r=10, m=1000):
-    fig, axs = plt.subplots(2,2)
-    axs = axs.flatten()
-
-    for i,alfa in enumerate(alfas):
-        difusiones = simular_difusion(alfa, n, r, m)
-        color = axs[i].pcolor(difusiones.T, cmap='hot')
-        fig.colorbar(color, ax=axs[i], label='u')
-        
-        axs[i].set_title('Alfa = ' + str(alfa))
-        axs[i].set_xlabel('k')
-        axs[i].set_ylabel('x')
-
-    plt.tight_layout()
-    plt.savefig("graficos/mapas_de_calor.png", format="PNG", bbox_inches='tight')
-
 
 # Difusión 2D
 def generar_laplaciano_2D(n, u_n):
@@ -350,23 +307,4 @@ def simular_difusion_2D(alfa, n, m):
 
     return u
 
-def plot_diffusion_evolution_2D(alfa=0.1, n=15, m=100, tiempos=None):
-    if tiempos is None:
-        tiempos = [0, 9, 99]
-    fig, axs = plt.subplots(2, 2)
-    axs = axs.flatten()
 
-    for i, t_i in enumerate(tiempos):
-        difusiones = simular_difusion_2D(alfa, n, m)
-        color = axs[i].pcolor(difusiones[tiempos[i]], cmap='hot')
-        plt.colorbar(color, ax=axs[i], label='u')
-        axs[i].set_title(f'Tiempo = ' + str(tiempos[i] + 1))
-        axs[i].set_xlabel('k')
-        axs[i].set_ylabel('x')
-    plt.tight_layout()
-    plt.show()
-   # plt.savefig("graficos/mapas_de_calor_2D.png", format="PNG", bbox_inches='tight')
-
-if __name__ == "__main__":
-    #plot_diffusion_evolution(alfas=[0.1,0.3,0.6,1])
-    plot_diffusion_evolution_2D(0.1, 15, 100, [0,9,49,99])
