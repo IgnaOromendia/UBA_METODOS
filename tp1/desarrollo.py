@@ -131,18 +131,18 @@ def eliminacion_gaussiana_tridiagonal(a, b, c, d):
     # Resolvemos
     for i in range(1, n):
         m = a0[i] / b0[i - 1]
-        a0[i] = a0[i] - m * b0[i - 1]
+        a0[i] = 0
         b0[i] = b0[i] - m * c0[i - 1]
         d0[i] = d0[i] - m * d0[i - 1]
 
-    for i in range(n):
-        A[i][i] = b0[i]
-        if i >= 1:
-            A[i][i - 1] = a0[i]
-        if i < n - 1:
-            A[i][i + 1] = c0[i]
+   
+    x = np.zeros(n)
+    x [-1] = d0[-1]/n
 
-    return backward_substitution_tri(A, d0)
+    for i in range(-1, -n-1, -1):
+        x[i] = (d0[i]-(c0[i]*x[i+1]))/b0[i]
+
+    return x
 
 
 # Factorización LU
