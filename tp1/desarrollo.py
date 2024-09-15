@@ -289,14 +289,23 @@ def simular_difusion(alfa, n, r, m):
     return np.array(u)
 
 
-def plot_diffusion_evolution(alfa=1, n=101, r=10, m=1000):
-    difusiones = simular_difusion(alfa, n, r, m)
-    plt.pcolor(difusiones.T, cmap='hot')
-    plt.colorbar(label='u')
-    plt.title(f'Mapa de calor')
-    plt.xlabel('k')
-    plt.ylabel('x')
-    plt.savefig("graficos/mapa_de_calor.png", format="PNG", bbox_inches='tight')
+def plot_diffusion_evolution(alfas, n=101, r=10, m=1000):
+    fig, axs = plt.subplots(2,2)
+    axs = axs.flatten()
+
+    fig.suptitle("Simulación de difusión para distintos alfas")
+
+    for i,alfa in enumerate(alfas):
+        difusiones = simular_difusion(alfa, n, r, m)
+        color = axs[i].pcolor(difusiones.T, cmap='hot')
+        fig.colorbar(color, ax=axs[i], label='u')
+        
+        axs[i].set_title('Alfa = ' + str(alfa))
+        axs[i].set_xlabel('k')
+        axs[i].set_ylabel('x')
+
+    plt.tight_layout()
+    plt.savefig("graficos/mapas_de_calor.png", format="PNG", bbox_inches='tight')
 
 
 # Difusión 2D
@@ -354,5 +363,5 @@ def plot_diffusion_evolution_2D(alfa=0.1, n=15, m=100, t=50):
 
 
 if __name__ == "__main__":
-    # plot_diffusion_evolution()
-    plot_diffusion_evolution_2D()
+    plot_diffusion_evolution(alfas=[0.1,0.3,0.6,1])
+    # plot_diffusion_evolution_2D()
