@@ -184,8 +184,6 @@ def factorizar_LU_tri(a, b, c):
 
     for i in range(n):
         U[i, i] = b0[i]
-        if i >= 1:
-            U[i, i - 1] = a0[i]
         if i < n - 1:
             U[i, i + 1] = c0[i]
 
