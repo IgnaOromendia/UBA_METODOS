@@ -65,7 +65,7 @@ def eliminacion_gaussiana(A, b):
 
     for i in range(0, n):
         if A[i, i] == 0:
-            print("AAAA!")
+            raise Exception('Queda un 0 en la diagonal!')
         for j in range(i + 1, n):
             m = A0[j, i] / A0[i, i]
             b0[j] = b0[j] - (m * b0[i])  # aplicar a b
@@ -346,20 +346,27 @@ def simular_difusion_2D(alfa, n, m):
     for k in range(1, m):
         uk = resolver_LU(L, U, u[k - 1].flatten())
         uk = uk.reshape(n, n)
-        u.append(mantener_constantes(uk,n))
+        u.append(mantener_constantes(uk, n))
 
     return u
 
-def plot_diffusion_evolution_2D(alfa=0.1, n=15, m=100, t=50):
-    difusiones = simular_difusion_2D(alfa, n, m)
-    plt.pcolor(difusiones[t], cmap='hot')
-    plt.colorbar(label='u')
-    plt.title(f'Mapa de calor')
-    plt.xlabel('k')
-    plt.ylabel('x')
-    plt.show()
+def plot_diffusion_evolution_2D(alfa=0.1, n=15, m=100, tiempos=None):
+    if tiempos is None:
+        tiempos = [0, 9, 99]
+    fig, axs = plt.subplots(2, 2)
+    axs = axs.flatten()
 
+    for i, t_i in enumerate(tiempos):
+        difusiones = simular_difusion_2D(alfa, n, m)
+        color = axs[i].pcolor(difusiones[tiempos[i]], cmap='hot')
+        plt.colorbar(color, ax=axs[i], label='u')
+        axs[i].set_title(f'Tiempo = ' + str(tiempos[i] + 1))
+        axs[i].set_xlabel('k')
+        axs[i].set_ylabel('x')
+    plt.tight_layout()
+    plt.show()
+   # plt.savefig("graficos/mapas_de_calor_2D.png", format="PNG", bbox_inches='tight')
 
 if __name__ == "__main__":
-    plot_diffusion_evolution(alfas=[0.1,0.3,0.6,1])
-    # plot_diffusion_evolution_2D()
+    #plot_diffusion_evolution(alfas=[0.1,0.3,0.6,1])
+    plot_diffusion_evolution_2D(0.1, 15, 100, [0,9,49,99])
