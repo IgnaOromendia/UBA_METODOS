@@ -134,11 +134,11 @@ def eliminacion_gaussiana_tridiagonal(a, b, c, d):
         a0[i] = 0
         b0[i] = b0[i] - m * c0[i - 1]
         d0[i] = d0[i] - m * d0[i - 1]
-
    
     x = np.zeros(n)
-    
-    for i in range(-1, -n-1, -1):
+
+    x [-1] = d0[-1]/b0[-1]    
+    for i in range(n-2, -1, -1):
         x[i] = (d0[i]-(c0[i]*x[i+1]))/b0[i]
     
     return x
@@ -183,6 +183,8 @@ def factorizar_LU_tri(a, b, c):
 
     for i in range(n):
         U[i, i] = b0[i]
+        if i >= 1:
+            U[i, i - 1] = a0[i]
         if i < n - 1:
             U[i, i + 1] = c0[i]
 
