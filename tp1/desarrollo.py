@@ -121,7 +121,6 @@ def eliminacion_gaussiana_pivoteo(A, b):
 
 def eliminacion_gaussiana_tridiagonal(a, b, c, d):
     n = a.shape[0]
-    A = np.zeros((n, n), dtype=np.float64)
 
     a0 = a.copy()
     b0 = b.copy()

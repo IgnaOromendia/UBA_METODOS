@@ -3,7 +3,7 @@
 - Warning de divisón
 - Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
 - Corregir subindices EG tridiagonal
-- Modificar el código de EG tri para que no genere la matriz A
+- Modificar el código de EG tri para que no genere la matriz A - HECHO
 - Modificar el código de LU tri para no generar la L entera
 - Corregir simulación de difusión 2D
 - Cambiar graficos pivoteo vs tri
