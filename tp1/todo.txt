@@ -1,4 +1,4 @@
-- Eliminar section{Resumen}
+- Eliminar section{Resumen} - HECHO - !!! Preguntar si hay q eliminar toda la seccion !!!
 - Mejorar F&B subs intro 
 - Warning de divisón
 - Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
