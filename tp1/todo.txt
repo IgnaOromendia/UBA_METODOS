@@ -1,11 +1,13 @@
-- Eliminar section{Resumen} - HECHO - !!! Preguntar si hay q eliminar toda la seccion !!!
 - Mejorar F&B subs intro 
 - Warning de divisón
 - Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
-- Corregir subindices EG tridiagonal
-- Modificar el código de EG tri para que no genere la matriz A - HECHO
 - Modificar el código de LU tri para no generar la L entera
 - Corregir simulación de difusión 2D
-- Cambiar graficos pivoteo vs tri
 - Hacer de nuevo el grafo de tri vs tri precomputo
 - Graficar EG con y sin pivoteo
+
+- HECHO -
+- Eliminar section{Resumen} !!! Preguntar si hay q eliminar toda la seccion !!!
+- Corregir subindices EG tridiagonal
+- Modificar el código de EG tri para que no genere la matriz A
+- Corregir texto pivoteo vs tri
