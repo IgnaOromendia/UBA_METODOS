@@ -190,8 +190,8 @@ def plot_tridiagonal_vs_precomputo():
     
     plt.ylabel('Tiempo en milisegundos')
     plt.xlabel('Cantidad de soluciones buscadas')
-    # plt.yscale("log",base=10)
-    # plt.xscale("log", base=2)
+    plt.yscale("log",base=10)
+    plt.xscale("log", base=2)
     plt.legend()
     plt.savefig('graficos/tridiagonal_vs_precomputo_tridiagonal.png')
     plt.show()
