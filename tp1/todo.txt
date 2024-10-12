@@ -1,7 +1,6 @@
 - Mejorar F&B subs intro 
 - Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
 - Corregir simulación de difusión 2D informe
-- Hacer de nuevo el grafo de tri vs tri precomputo
 - Graficar EG con y sin pivoteo
 
 - HECHO -
@@ -11,3 +10,4 @@
 - Corregir texto pivoteo vs tri
 - Warning de divisón
 - Modificar el código de LU tri para no generar la L entera
+- Hacer de nuevo el grafo de tri vs tri precomputo
