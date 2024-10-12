@@ -28,8 +28,8 @@ def forward_substitution(A, b):
     return x
 
 
-def backward_substitution_tri(a, b, c, d):
-    n = a.shape[0]
+def backward_substitution_tri(b, c, d):
+    n = b.shape[0]
     x = np.zeros(n, dtype=np.float64)
 
     for i in range(n - 1, -1, -1):
@@ -165,18 +165,16 @@ def factorizar_LU_tri(a, b, c):
     n = a.shape[0]
     l = np.zeros(n, dtype=np.float64)
 
-    a0 = a.copy()
     b0 = b.copy()
     c0 = c.copy()
 
     # Resolvemos
     for i in range(1, n):
-        m = a0[i] / b0[i - 1]
+        m = a[i] / b0[i - 1]
         l[i] = m
-        a0[i] = a0[i] - m * b0[i - 1]
         b0[i] = b0[i] - m * c0[i - 1]
 
-    return l, a0, b0, c0
+    return l, b0, c0
 
 
 def resolver_LU(L, U, b):
@@ -185,9 +183,10 @@ def resolver_LU(L, U, b):
     return x
 
 
-def resolver_LU_tri(l, a, b, c, d):
+# {b,c} representan la matriz U de la factorización LU
+def resolver_LU_tri(l, b, c, d):
     y = forward_substitution_tri(l, d)
-    x = backward_substitution_tri(a, b, c, y)
+    x = backward_substitution_tri(b, c, y)
     return x
 
 

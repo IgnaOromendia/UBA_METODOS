@@ -95,25 +95,24 @@ class TestEliminaciongaussiana(unittest.TestCase):
             a[0] = 0
             c[-1] = 0
 
-            l, u1, u2, u3 = factorizar_LU_tri(a, b, c)
+            l, u1, u2 = factorizar_LU_tri(a, b, c)
 
             L = np.eye(n, dtype=np.float64)
             U = np.zeros((n, n), dtype=np.float64)
 
             for i in range(n):
-                U[i, i] = u2[i]
+                U[i, i] = u1[i]
                 if i >= 1:
                     L[i, i - 1] = l[i]
-                    U[i, i - 1] = u1[i]
                 if i < n - 1:
-                    U[i, i + 1] = u3[i]
+                    U[i, i + 1] = u2[i]
 
             np.testing.assert_array_almost_equal(np.dot(L, U), A, decimal=5)
 
             for _ in range(5):
                 d = np.random.randint(1, 10, size=n).astype(np.float64)
 
-                x = resolver_LU_tri(l, u1, u2, u3, d)
+                x = resolver_LU_tri(l, u1, u2, d)
 
                 np.testing.assert_array_almost_equal(np.dot(A, x), d, decimal=5)
 
