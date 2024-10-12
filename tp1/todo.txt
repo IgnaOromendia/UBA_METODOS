@@ -1,8 +1,6 @@
 - Mejorar F&B subs intro 
-- Warning de divisón
 - Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
-- Modificar el código de LU tri para no generar la L entera
-- Corregir simulación de difusión 2D
+- Corregir simulación de difusión 2D informe
 - Hacer de nuevo el grafo de tri vs tri precomputo
 - Graficar EG con y sin pivoteo
 
@@ -11,3 +9,5 @@
 - Corregir subindices EG tridiagonal
 - Modificar el código de EG tri para que no genere la matriz A
 - Corregir texto pivoteo vs tri
+- Warning de divisón
+- Modificar el código de LU tri para no generar la L entera

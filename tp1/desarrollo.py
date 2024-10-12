@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 
 # Substitutions
 
@@ -30,28 +28,27 @@ def forward_substitution(A, b):
     return x
 
 
-def backward_substitution_tri(A, b):
-    n = A.shape[0]
+def backward_substitution_tri(a, b, c, d):
+    n = a.shape[0]
     x = np.zeros(n, dtype=np.float64)
 
     for i in range(n - 1, -1, -1):
         suma = 0
         if i < n - 1:
-            suma = A[i, i + 1] * x[i + 1]
-        x[i] = (b[i] - suma) / A[i, i]
+            suma = c[i] * x[i + 1]
+        x[i] = (d[i] - suma) / b[i]
 
     return x
 
 
-def forward_substitution_tri(A, b):
-    n = A.shape[0]
+def forward_substitution_tri(l, d):
+    n = l.shape[0]
     x = np.zeros(n, dtype=np.float64)
 
-    for i in range(n):
-        suma = 0
-        if i > 0:
-            suma = A[i, i - 1] * x[i - 1]
-        x[i] = (b[i] - suma) / A[i, i]
+    x[0] = d[0]
+
+    for i in range(1, n):
+        x[i] = d[i] - (l[i] * x[i - 1])
 
     return x
 
@@ -166,8 +163,7 @@ def factorizar_LU(T):
 
 def factorizar_LU_tri(a, b, c):
     n = a.shape[0]
-    L = np.eye(n, dtype=np.float64)
-    U = np.zeros((n, n), dtype=np.float64)
+    l = np.zeros(n, dtype=np.float64)
 
     a0 = a.copy()
     b0 = b.copy()
@@ -176,18 +172,11 @@ def factorizar_LU_tri(a, b, c):
     # Resolvemos
     for i in range(1, n):
         m = a0[i] / b0[i - 1]
-        L[i, i - 1] = m
+        l[i] = m
         a0[i] = a0[i] - m * b0[i - 1]
         b0[i] = b0[i] - m * c0[i - 1]
 
-    for i in range(n):
-        U[i, i] = b0[i]
-        if i >= 1:
-            U[i, i - 1] = a0[i]
-        if i < n - 1:
-            U[i, i + 1] = c0[i]
-
-    return L, U
+    return l, a0, b0, c0
 
 
 def resolver_LU(L, U, b):
@@ -196,9 +185,9 @@ def resolver_LU(L, U, b):
     return x
 
 
-def resolver_LU_tri(L, U, b):
-    y = forward_substitution_tri(L, b)
-    x = backward_substitution_tri(U, y)
+def resolver_LU_tri(l, a, b, c, d):
+    y = forward_substitution_tri(l, d)
+    x = backward_substitution_tri(a, b, c, y)
     return x
 
 
