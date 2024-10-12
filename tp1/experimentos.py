@@ -2,6 +2,7 @@ from desarrollo import *
 import sys
 import time
 from tests import *
+import matplotlib.pyplot as plt
 
 def comparar_tiempo_pivoteo_vs_tridiagonal(lista_size, cant_repeticiones):
     tiempo_pivoteo = []
@@ -74,15 +75,13 @@ def calcular_tiempos_trid_vs_precomputo_trdi(size, cant_repeticiones, n):
             d = np.random.randint(1, 10, size)
             if i == 0:
                 start_time = time.time()
-                L, U = factorizar_LU_tri(a, b, c)
-                y = forward_substitution_tri(L, d)
-                x = backward_substitution_tri(U, y)
+                l, u1, u2 = factorizar_LU_tri(a, b, c)
+                resolver_LU_tri(l, u1, u2, d)
                 end_time = time.time()
                 tiempo__prec_descartable[i] = end_time - start_time
             else:
                 start_time = time.time()
-                y = forward_substitution_tri(L, d)
-                x = backward_substitution_tri(U, y)
+                resolver_LU_tri(l, u1, u2, d)
                 end_time = time.time()
                 tiempo__prec_descartable[i] = (end_time - start_time) + tiempo__prec_descartable[i - 1]
 
@@ -103,17 +102,17 @@ def verificar_implementacion_tri(n):
     # Matriz trifiagonal laplaciana
     a, b, c = diagonales(generar_laplaciano(n))
 
-    L, U = factorizar_LU_tri(a, b, c)
+    l, u1, u2 = factorizar_LU_tri(a, b, c)
 
-    u1 = resolver_LU_tri(L, U, d1)
-    u2 = resolver_LU_tri(L, U, d2)
-    u3 = resolver_LU_tri(L, U, d3)
+    w1 = resolver_LU_tri(l, u1, u2, d1)
+    w2 = resolver_LU_tri(l, u1, u2, d2)
+    w3 = resolver_LU_tri(l, u1, u2, d3)
 
     tams = [i for i in range(n)]
 
-    plt.plot(tams, u1, label="(a)", color="steelblue")
-    plt.plot(tams, u2, label="(b)", color="peru")
-    plt.plot(tams, u3, label="(c)", color="forestgreen")
+    plt.plot(tams, w1, label="(a)", color="steelblue")
+    plt.plot(tams, w2, label="(b)", color="peru")
+    plt.plot(tams, w3, label="(c)", color="forestgreen")
     plt.xlabel("x")
     plt.ylabel("u")
     plt.legend()
