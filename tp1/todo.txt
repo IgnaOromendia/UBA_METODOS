@@ -1,5 +1,4 @@
 - Mejorar F&B subs intro 
-- Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
 - Corregir simulación de difusión 2D informe
 - Graficar EG con y sin pivoteo
 
@@ -12,3 +11,4 @@
 - Modificar el código de LU tri para no generar la L entera
 - Hacer de nuevo el grafo de tri vs tri precomputo
 - Cambiar el swap de filas
+- Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
