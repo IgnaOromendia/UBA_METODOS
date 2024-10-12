@@ -2,7 +2,6 @@
 - Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
 - Corregir simulación de difusión 2D informe
 - Graficar EG con y sin pivoteo
-- Cambiar el swap de filas
 
 - HECHO -
 - Eliminar section{Resumen} !!! Preguntar si hay q eliminar toda la seccion !!!
@@ -12,3 +11,4 @@
 - Warning de divisón
 - Modificar el código de LU tri para no generar la L entera
 - Hacer de nuevo el grafo de tri vs tri precomputo
+- Cambiar el swap de filas

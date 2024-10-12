@@ -74,9 +74,9 @@ def eliminacion_gaussiana(A, b):
 
 def permutar_filas(A, i, j):
     copia = A[i].copy()
-    A[i] = A[j]
-    A[j] = copia
-
+    for k in range(len(A[j])):
+        A[i][k] = A[j][k]
+        A[j][k] = copia[k]
 
 def permutar_elementos_vector(A, i, j):
     copia = A[i]
