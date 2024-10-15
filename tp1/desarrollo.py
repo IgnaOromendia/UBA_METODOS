@@ -242,10 +242,10 @@ def simular_difusion(alfa, n, r, m):
     u = [generar_u0(n, r)]
 
     a, b, c = diagonales(A)
-    L, U = factorizar_LU_tri(a, b, c)
+    l, u1, u2 = factorizar_LU_tri(a, b, c)
 
     for k in range(1, m):
-        uk = resolver_LU_tri(L, U, u[k - 1])
+        uk = resolver_LU_tri(l, u1, u2, u[k - 1])
         u.append(uk)
 
     return np.array(u)
