@@ -166,15 +166,14 @@ def factorizar_LU_tri(a, b, c):
     l = np.zeros(n, dtype=np.float64)
 
     b0 = b.copy()
-    c0 = c.copy()
 
     # Resolvemos
     for i in range(1, n):
         m = a[i] / b0[i - 1]
         l[i] = m
-        b0[i] = b0[i] - m * c0[i - 1]
+        b0[i] = b0[i] - m * c[i - 1]
 
-    return l, b0, c0
+    return l, b0, c
 
 
 def resolver_LU(L, U, b):
