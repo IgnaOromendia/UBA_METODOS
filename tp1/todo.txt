@@ -1,9 +1,7 @@
-- Mejorar F&B subs intro 
 - Corregir simulación de difusión 2D informe
-- Graficar EG con y sin pivoteo
 
 - HECHO -
-- Eliminar section{Resumen} !!! Preguntar si hay q eliminar toda la seccion !!!
+- Eliminar section{Resumen} 
 - Corregir subindices EG tridiagonal
 - Modificar el código de EG tri para que no genere la matriz A
 - Corregir texto pivoteo vs tri
@@ -12,3 +10,5 @@
 - Hacer de nuevo el grafo de tri vs tri precomputo
 - Cambiar el swap de filas
 - Ejemplo donde falla pivoteo porque se tienen infintas o ninguna solución
+- Mejorar F&B subs intro
+- Graficar EG con y sin pivoteo
