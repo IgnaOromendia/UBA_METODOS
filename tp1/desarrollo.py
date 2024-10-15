@@ -294,3 +294,26 @@ def simular_difusion_2D(alfa, n, m):
     return u
 
 
+def simular_difusion_2D_naive(alfa, n, m):
+    A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2D(n * n, n)
+
+    u = [generar_u0_2D(n)]
+
+
+    for k in range(1, m):
+        uk = eliminacion_gaussiana(A, u[k - 1].flatten())
+        uk = uk.reshape(n, n)
+        u.append(mantener_constantes(uk, n))
+
+    return u
+
+def simular_difusion_2D_con_pivoteo(alfa, n, m):
+    A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2D(n * n, n)
+
+    u = [generar_u0_2D(n)]
+
+
+    for k in range(1, m):
+        uk = eliminacion_gaussiana_pivoteo(A, u[k - 1].flatten())
+        uk = uk.reshape(n, n)
+        u.append(mantener_constantes(uk, n))

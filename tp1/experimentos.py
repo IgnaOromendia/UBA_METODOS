@@ -221,9 +221,38 @@ def plot_pivoteo_vs_tridiagonal():
     plt.savefig('graficos/tridiagonal_vspivoteo.png')
     plt.show()
 
+def comparar_difusion_2d(alfa, m, lista_size):
+
+    lista_tiempos_naive = []
+    lista_tiempos_pivoteo = []
+
+    for i in range(len(lista_size)):
+        print('En: ', lista_size[i])
+        start_time = time.time()
+        difusiones = simular_difusion_2D_naive(alfa, lista_size[i], m)
+        end_time = time.time()
+        lista_tiempos_naive.append(end_time-start_time)
+
+        start_time = time.time()
+        difusiones = simular_difusion_2D_con_pivoteo(alfa, lista_size[i], m)
+        end_time = time.time()
+        lista_tiempos_pivoteo.append(end_time-start_time)
+        
+
+    plt.plot(lista_size, lista_tiempos_naive, color='blue', label='EG naive')
+    plt.plot(lista_size, lista_tiempos_pivoteo, color='red', label='EG con pivoteo')
+    plt.ylabel('Tiempo en milisegundos')
+    plt.xlabel('Tamaño de la matriz')
+    plt.legend()
+    #plt.yscale("log")
+    #plt.savefig('graficos/ej72.png')
+    plt.show()
+
+
 if __name__ == "__main__":
     print("Experimentando...")
     # plot_diffusion_evolution(alfas=[0.1,0.3,0.6,1])
+    comparar_difusion_2d(0.1, 100, [5,7,10,12,15])
     # plot_diffusion_evolution_2D(0.1, 15, 100, [0,9,49,99])
     # plot_error_numerico()
     # plot_tridiagonal_vs_precomputo()
