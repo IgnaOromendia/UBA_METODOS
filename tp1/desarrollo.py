@@ -279,7 +279,7 @@ def mantener_constantes(uk, n):
     uk[n - 1, :] = 0
     return uk
 
-def simular_difusion_2D(alfa, n, m):
+def simular_difusion_2D_LU(alfa, n, m):
     A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2D(n * n, n)
 
     u = [generar_u0_2D(n)]
@@ -293,8 +293,7 @@ def simular_difusion_2D(alfa, n, m):
 
     return u
 
-
-def simular_difusion_2D_naive(alfa, n, m):
+def simular_difusion_2D_sin_pivoteo(alfa, n, m):
     A = np.eye(n * n, dtype=np.float64) - alfa * generar_laplaciano_2D(n * n, n)
 
     u = [generar_u0_2D(n)]

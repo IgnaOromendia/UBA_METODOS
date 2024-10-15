@@ -125,7 +125,7 @@ def plot_diffusion_evolution_2D(alfa=0.1, n=15, m=100, tiempos=None):
     axs = axs.flatten()
 
     for i, t_i in enumerate(tiempos):
-        difusiones = simular_difusion_2D(alfa, n, m)
+        difusiones = simular_difusion_2D_LU(alfa, n, m)
         color = axs[i].pcolor(difusiones[tiempos[i]], cmap='hot')
         plt.colorbar(color, ax=axs[i], label='u')
         axs[i].set_title(f'Tiempo = ' + str(tiempos[i] + 1))
@@ -229,7 +229,7 @@ def comparar_difusion_2d(alfa, m, lista_size):
     for i in range(len(lista_size)):
         print('En: ', lista_size[i])
         start_time = time.time()
-        difusiones = simular_difusion_2D_naive(alfa, lista_size[i], m)
+        difusiones = simular_difusion_2D_sin_pivoteo(alfa, lista_size[i], m)
         end_time = time.time()
         lista_tiempos_naive.append(end_time-start_time)
 
@@ -245,14 +245,14 @@ def comparar_difusion_2d(alfa, m, lista_size):
     plt.xlabel('Tamaño de la matriz')
     plt.legend()
     #plt.yscale("log")
-    #plt.savefig('graficos/ej72.png')
-    plt.show()
+    plt.savefig('graficos/grafico_EG_con_vs_sin_pivoteo.png')
+    # plt.show()
 
 
 if __name__ == "__main__":
     print("Experimentando...")
     # plot_diffusion_evolution(alfas=[0.1,0.3,0.6,1])
-    comparar_difusion_2d(0.1, 100, [5,7,10,12,15])
+    # comparar_difusion_2d(0.1, 100, [5,7,10,12,15])
     # plot_diffusion_evolution_2D(0.1, 15, 100, [0,9,49,99])
     # plot_error_numerico()
     # plot_tridiagonal_vs_precomputo()
