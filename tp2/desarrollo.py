@@ -5,38 +5,10 @@ from scipy import stats #type: ignore
 mapMovieIndex = {"science fiction": 0, "romance":1, "crime":2, "western":3}
 mapIndexMovie = {0:"science fiction", 1:"romance", 2:"crime", 3:"western"}
 
-def cov(x,y):
-    n = len(x)
-    media_x = sum(x) / n
-    media_y = sum(y) / n
-
-    prod = 0
-    for i in range(n):
-        prod += (x[i] - media_x) * (y[i] - media_y)
-
-    return prod / (n - 1)
-
-def corr(x,y):
-    n = len(x)
-    media_x = sum(x) / n
-    media_y = sum(y) / n
-
-    numerador = 0
-    divisor = 0
-
-    for i in range(n):
-        numerador += (x[i] - media_x) * (y[i] - media_y)
-        divisor += (x[i] - media_x)**2 * (y[i] - media_y)**2
-
-    divisor = np.sqrt(divisor)
-
-    return numerador / divisor
-
-def dist_cos(x,y):
-    return 1 - corr(x,y)
-
 # Leer datos:                   
 df = pd.read_csv("datos.csv")
+
+df["GenreID"] = df["Genre"].apply(lambda x: mapMovieIndex[x])
 
 # Matriz de tokens
 def matriz_tokens():
@@ -52,20 +24,33 @@ def matriz_tokens():
     
     return X
 
-def knn(i, k, X):
+def distancias(X):
     n = X.shape[0]
-    C = (X @ X.T) / (n-1) # Lo hacemos al reves
+    return (X @ X.T) / (n-1)
 
-    # print(C.shape[0])
-    # print(df.shape[0])
+def knn(i, k, C):
+    cercanos = np.argsort(C[i])[::-1][:k]
+    ids = np.array(df["GenreID"].values[cercanos])
+    return mapIndexMovie[stats.mode(ids).mode]
 
-    cercanos = np.argsort(C[i])[::-1]
+def clasificar(k, C):
+    predict = {}
 
-    df["GenreID"] = df["Genre"].apply(lambda x: mapMovieIndex[x])
+    for i in range(len(C)):
+        predict[i] = knn(i, k, C)
 
-    ids = np.array(df["GenreID"].values)
+    return predict
 
-    return stats.mode(ids).mode
+def performance(predictions):
+    acertados = 0
+    
+    for (i, predict) in predictions.items():
+        if df["Genre"][i] == predict:
+            acertados += 1
 
-print(mapIndexMovie[knn(15, 20, matriz_tokens())])
+    return acertados / len(predictions)
+
+# Probar con varios k como experimento
+predictions = clasificar(25, distancias(matriz_tokens()))
+print(performance(predictions))
 
