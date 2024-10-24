@@ -37,7 +37,7 @@ AutoData metodo_potencia(MatrixXd& A, int niter, double eps) {
     return AutoData(lambda, v, i);
 }
 
-vector<AutoData> obtener_autovalores(MatrixXd& A, int num, int niter=10000, double eps=1e-6) {
+vector<AutoData> obtener_autovalores(MatrixXd& A, int num, int niter=10000, double eps=10e-7) {
     MatrixXd B = A;
     vector<AutoData> result;
 
