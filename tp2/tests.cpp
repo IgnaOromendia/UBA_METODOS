@@ -11,7 +11,7 @@ MatrixXd matriz_householder(VectorXd w) {
 
     D.diagonal() = w;
 
-    VectorXd v(n); v.setConstant(1);
+    VectorXd v(n); v.setConstant(1); // Randomizar esto
 
     v = v / v.lpNorm<2>();
 
