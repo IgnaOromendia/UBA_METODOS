@@ -38,7 +38,7 @@ double calcular_desvio(vector<double>& v, double promedio) {
     return sqrt(sumaCuadrados / v.size());
 }
 
-AutoData metodo_potencia(MatrixXd& A, int niter, double eps, int reps) {
+AutoData metodo_potencia(MatrixXd& A, int niter, double eps) {
     double l = 1;   
     VectorXd v(A.rows()); v.setConstant(-1);
     VectorXd w = v;
