@@ -61,12 +61,12 @@ AutoData metodo_potencia(MatrixXd& A, int niter, double eps) {
     return AutoData(l, v, i, err);
 }
 
-vector<AutoData> obtener_autovalores(MatrixXd& A, int niter=10e8, double eps=10e-7, int reps=5) {
+vector<AutoData> obtener_autovalores(MatrixXd& A, int niter=10e8, double eps=10e-7) {
     MatrixXd B = A;
     vector<AutoData> result;
 
     for (int i = 0; i < B.rows(); i++) {
-        AutoData res = metodo_potencia(B, niter, eps, reps);
+        AutoData res = metodo_potencia(B, niter, eps);
         result.push_back(res);
         B = B - res.l * (res.v * res.v.transpose());
     }
