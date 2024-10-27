@@ -73,9 +73,10 @@ def plot_convergencia(resultados, epsilons):
     plt.ylabel('Iteraciones')
     plt.xlabel('$\epsilon$')
     plt.xscale("log")
-    plt.yscale("log")
+    # plt.yscale("log")
     plt.legend()
     plt.grid(True)
+    plt.title("Iteraciones de cada $\lambda$ en el método de la potencia")
     plt.savefig('graficos/grafico_convergencia.png')
     plt.show()
 
@@ -91,6 +92,7 @@ def plot_error_metodo_potencia(resultados, epsilons):
     plt.xscale("log")
     plt.legend()
     plt.grid(True)
+    plt.title("Error de cada $\lambda$ en el método de la potencia")
     plt.savefig('graficos/grafico_error_metodo_potencia.png')
     plt.show()
 
@@ -129,5 +131,5 @@ if __name__ == "__main__":
 
     resultados_mp = leer_resultados_mp()
     
-    # plot_convergencia(resultados_mp, epsilons)
-    plot_error_metodo_potencia(resultados_mp, epsilons)
+    plot_convergencia(resultados_mp, epsilons)
+    # plot_error_metodo_potencia(resultados_mp, epsilons)

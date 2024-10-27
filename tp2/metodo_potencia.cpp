@@ -82,7 +82,7 @@ void escribir_vector(ofstream& f, VectorXd& vec) {
 void escribir_output(vector<vector<AutoData>>& res) {
     ofstream f("output_mp.csv");
 
-    f << "Matriz,Autovalor,Autovector...,Iteraciones...,Error\n";
+    f << "Matriz,Autovalor,Autovector...,IterPromedio,IterDesivo,ErrorPromedio,ErrorDesvio\n";
 
     for(int k = 0; k < res.size(); k++) {
         for (int i = 0; i < res[k].size(); i++) {
@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    vector<vector<MatrixXd>> matrices = leer_input(argv[1]);
+    vector<vector<MatrixXd>> matrices = leer_input(argv[1]); // Por cada epsilon un vector de Matrices
     
     vector<vector<AutoData>> results;
 
