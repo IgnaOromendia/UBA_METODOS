@@ -68,7 +68,7 @@ vector<AutoData> obtener_autovalores(MatrixXd& A, int niter=10e8, double eps=10e
     for (int i = 0; i < B.rows(); i++) {
         AutoData res = metodo_potencia(B, niter, eps);
         result.push_back(res);
-        B = B - res.l * (res.v * res.v.transpose());
+        B = B - (res.l * res.v * res.v.transpose());
     }
     
     return result;
