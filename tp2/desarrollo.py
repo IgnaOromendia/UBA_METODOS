@@ -33,7 +33,7 @@ def dist_coseno(X,Y):
 
 def knn(i, k, C, dataSet):
     cercanos = np.argsort(C[i])[::-1][:k]
-    ids = np.array(df["GenreID"].values[cercanos])
+    ids = np.array(dataSet["GenreID"].values[cercanos]) # Fijarse este dataSet
     return mapIndexMovie[stats.mode(ids).mode]
 
 def clasificar(k, D, dataSet):
