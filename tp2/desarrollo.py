@@ -5,10 +5,6 @@ from scipy import stats #type: ignore
 mapMovieIndex = {"science fiction": 0, "romance":1, "crime":2, "western":3}
 mapIndexMovie = {0:"science fiction", 1:"romance", 2:"crime", 3:"western"}
 
-# Leer datos:                   
-df = pd.read_csv("datos.csv")
-df["GenreID"] = df["Genre"].apply(lambda x: mapMovieIndex[x])
-
 # Matriz de tokens
 def matriz_tokens(Q, dataSet):
     tokens = np.hstack(dataSet["tokens"].apply(lambda x: x.split()).values)
@@ -24,51 +20,62 @@ def matriz_tokens(Q, dataSet):
     
     return X
 
-def mat_covarianza(X):
-    n = X.shape[0]
-    return (X @ X.T) / (n-1)
-
 def dist_coseno(X,Y):
     return 1 - ((X @ Y.T) / ((np.linalg.norm(X, ord=2) * (np.linalg.norm(Y, ord=2)))))
 
-def knn(i, k, C, dataSet):
-    cercanos = np.argsort(C[i])[::-1][:k]
-    ids = np.array(dataSet["GenreID"].values[cercanos]) # Fijarse este dataSet
+def knn(i, k, D, trainMap):
+    # Obtenemos los k vecinos más cercanos
+    cercanos = np.argsort(D[i])[::-1][:k]
+
+    # Ubicamos los id de género que elegimos
+    ids = df.iloc[trainMap[cercanos]]["GenreID"].values
+
+    # Devolvemos la moda de los géneros
     return mapIndexMovie[stats.mode(ids).mode]
 
-def clasificar(k, D, dataSet):
+def clasificar(k, D, testMap, trainMap):
     predict = {}
 
-    for t in range(len(D)):
-        predict[t] = knn(t, k, D, dataSet)
+    # Guardamos un mapeo (indice original del df, predicción)
+    for t in range(D.shape[0]):
+        predict[testMap[t]] = knn(t, k, D, trainMap)
 
     return predict
 
-# Probar con varios k como experimento !!!
+def performance(predictions):
+    acertados = 0
+    
+    # Contabilizamos los hits
+    for i, predict in predictions.items():
+        if df["Genre"][i] == predict:
+            acertados += 1
 
-def clasificador_de_genero(Q):
-    k = 5
+    # Sacamos el promedio
+    return acertados / len(predictions)
 
-    train_set = df[df["split"] == "train"].dropna(subset=["tokens"]).reset_index(drop=True)
-    test_set = df[df["split"] == "test"].dropna(subset=["tokens"]).reset_index(drop=True)
+def clasificador_de_genero(Q, k):
+    # Filtramos en trainning y testing reseteanod los índices para poder acceder a la matriz de distancias D
+    train_set = df[df["split"] == "train"].reset_index()
+    test_set  = df[df["split"] == "test"].reset_index()
 
+    # Guardamos un mapeo para cada data set
+    mapeoIndicesTrainSet = train_set["index"].to_numpy()
+    mapeoIndicesTestSet  = test_set["index"].to_numpy()
+
+    # Genermaos la matriz de tokens para ambos sets
     X_train = matriz_tokens(Q, train_set)
     X_test  = matriz_tokens(Q, test_set)    
 
-    distancias = dist_coseno(X_test, X_train)
+    # Calulamos las distancias entre el trainning set y el testing set
+    D = dist_coseno(X_test, X_train)
 
-    predictions = clasificar(k, distancias, test_set)
+    # Clasificamos
+    predictions = clasificar(k, D, mapeoIndicesTestSet, mapeoIndicesTrainSet)
 
-    print(performance(predictions, test_set))
+    # Medimos la performance
+    print(performance(predictions))
 
-
-def performance(predictions, dataSet):
-    acertados = 0
-    
-    for (i, predict) in predictions.items():
-        if dataSet["Genre"][i] == predict:
-            acertados += 1
-
-    return acertados / len(predictions)
-
-clasificador_de_genero(1000)
+# Leer datos:                   
+df = pd.read_csv("datos.csv")
+df["GenreID"] = df["Genre"].apply(lambda x: mapMovieIndex[x])
+clasificador_de_genero(Q=1000, k=5)
