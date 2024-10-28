@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-import subprocess as sp
 import numpy as np
 import csv
+import desarrollo as ds
 
 def escribir_matriz(mat_a_escribir, archivo):
     with open(archivo, 'w') as f:
@@ -17,7 +17,6 @@ def escribir_matriz(mat_a_escribir, archivo):
                     f.write("\n")
 
 def leer_resultados_mp():
-    reps = 5
     with open("output_mp.csv", 'r') as f:
         reader = csv.reader(f)
         
@@ -55,13 +54,6 @@ def leer_resultados_mp():
         datos_matrices.append((autovals.copy(), autovecs.copy(), it_prom.copy(), it_des.copy(), err_prom.copy(), err_des.copy())) # Agregamos los datos de la última matriz
 
     return datos_matrices
-
-def calular_autovalores(archivo):
-    resultado = sp.run(['./ejecMP', archivo], text=True)
-    if resultado.returncode == 0:
-        print("Datos en output_mp.csv")
-    else:
-        print("Error:", resultado.stderr)
 
 def plot_convergencia(resultados, epsilons):
     cant_lambdas = len(resultados[0][0])
@@ -109,7 +101,6 @@ def matriz_householder(w):
 
     return H @ D @ H.T
 
-
 if __name__ == "__main__":
     archivo = 'input_mp.dat'
 
@@ -127,7 +118,7 @@ if __name__ == "__main__":
 
     escribir_matriz(matrices_a_escribir, archivo)
     
-    calular_autovalores(archivo)
+    ds.calular_autovalores(archivo)
 
     resultados_mp = leer_resultados_mp()
     
