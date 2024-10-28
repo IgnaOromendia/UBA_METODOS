@@ -7,7 +7,7 @@ mapIndexMovie = {0:"science fiction", 1:"romance", 2:"crime", 3:"western"}
 
 # Matriz de tokens
 def matriz_tokens(Q, dataSet):
-    tokens = np.hstack(dataSet["tokens"].apply(lambda x: x.split()).values)
+    tokens = np.hstack(df["tokens"].apply(lambda x: x.split()).values)
 
     unique_tokens = pd.Series(tokens).value_counts().index[:Q].values
     unique_tokens_dict = dict(zip(unique_tokens, range(len(unique_tokens))))
@@ -20,18 +20,20 @@ def matriz_tokens(Q, dataSet):
     
     return X
 
-def dist_coseno(X,Y):
-    return 1 - ((X @ Y.T) / ((np.linalg.norm(X, ord=2) * (np.linalg.norm(Y, ord=2)))))
+def dist_coseno(X, Y):
+    X_norm = np.linalg.norm(X, axis=1, ord=2, keepdims=True)
+    Y_norm = np.linalg.norm(Y, axis=1, ord=2, keepdims=True)
+    return 1 - (X @ Y.T) / (X_norm @ Y_norm.T)
 
 def knn(i, k, D, trainMap):
     # Obtenemos los k vecinos más cercanos
-    cercanos = np.argsort(D[i])[::-1][:k]
+    cercanos = np.argsort(D[i])[:k]
 
     # Ubicamos los id de género que elegimos
     ids = df.iloc[trainMap[cercanos]]["GenreID"].values
 
     # Devolvemos la moda de los géneros
-    return mapIndexMovie[stats.mode(ids).mode]
+    return mapIndexMovie[stats.mode(ids, keepdims=True).mode[0]]
 
 def clasificar(k, D, testMap, trainMap):
     predict = {}
