@@ -68,7 +68,7 @@ if __name__ == "__main__":
     
     ds.calular_autovalores(archivoEntrada, archivoSalida, '1')
 
-    resultados_mp = ds.leer_output_mp(archivoSalida)
+    resultados_mp = ds.leer_output_experimento_mp(archivoSalida)
     
     plot_convergencia(resultados_mp, epsilons)
     plot_error_metodo_potencia(resultados_mp, epsilons)
