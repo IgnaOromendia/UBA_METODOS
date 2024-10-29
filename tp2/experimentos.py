@@ -1,59 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import csv
 import desarrollo as ds
-
-def escribir_matriz(mat_a_escribir, archivo):
-    with open(archivo, 'w') as f:
-        f.write(str(len(mat_a_escribir)) + "\n")
-        f.write(str(len(mat_a_escribir[0])) + "\n")
-
-        for matrices in mat_a_escribir:
-            for A in matrices:
-                f.write(str(len(A)) + " " + str(len(A[0])) + "\n")
-                for i in range(len(A)):
-                    for j in range(len(A[0])):
-                        f.write(str(A[i][j]) + " ")
-                    f.write("\n")
-
-def leer_resultados_mp():
-    with open("output_mp.csv", 'r') as f:
-        reader = csv.reader(f)
-        
-        next(reader) # Salteamos los headings
-
-        mat_id = 1
-        autovals = []
-        autovecs = []
-        it_prom = []
-        it_des = []
-        err_prom = []
-        err_des = []
-        datos_matrices = []
-
-        for linea in reader:
-            new_mat_id = int(linea[0])
-
-            if mat_id != new_mat_id:
-                datos_matrices.append((autovals.copy(), autovecs.copy(), it_prom.copy(), it_des.copy(), err_prom.copy(), err_des.copy()))
-                mat_id = new_mat_id
-                autovecs.clear()
-                autovals.clear()
-                it_prom.clear()
-                it_des.clear()
-                err_prom.clear()
-                err_des.clear()
-                
-            autovals.append(float(linea[1]))
-            autovecs.append(np.array([float(i) for i in linea[2:-4]]))
-            it_prom.append(float(linea[-4]))
-            it_des.append(float(linea[-3]))
-            err_prom.append(float(linea[-2]))
-            err_des.append(float(linea[-1]))
-
-        datos_matrices.append((autovals.copy(), autovecs.copy(), it_prom.copy(), it_des.copy(), err_prom.copy(), err_des.copy())) # Agregamos los datos de la última matriz
-
-    return datos_matrices
 
 def plot_convergencia(resultados, epsilons):
     cant_lambdas = len(resultados[0][0])
@@ -102,7 +49,8 @@ def matriz_householder(w):
     return H @ D @ H.T
 
 if __name__ == "__main__":
-    archivo = 'input_mp.dat'
+    archivoEntrada = 'exper_input_mp.dat'
+    archivoSalida  = 'exper_output_mp.csv' 
 
     epsilons = np.logspace(-4, 0,num=5)
     matrices_a_escribir = []
@@ -116,11 +64,11 @@ if __name__ == "__main__":
             matrices_para_eps.append(matriz_householder(v))
         matrices_a_escribir.append(matrices_para_eps)
 
-    escribir_matriz(matrices_a_escribir, archivo)
+    ds.escribir_input_experimento_mp(matrices_a_escribir, archivoEntrada)
     
-    ds.calular_autovalores(archivo)
+    ds.calular_autovalores(archivoEntrada, archivoSalida, '1')
 
-    resultados_mp = leer_resultados_mp()
+    resultados_mp = ds.leer_output_mp(archivoSalida)
     
     plot_convergencia(resultados_mp, epsilons)
-    # plot_error_metodo_potencia(resultados_mp, epsilons)
+    plot_error_metodo_potencia(resultados_mp, epsilons)
