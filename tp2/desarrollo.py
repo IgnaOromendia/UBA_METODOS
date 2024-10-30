@@ -7,6 +7,7 @@ import csv
 mapMovieIndex = {"science fiction": 0, "romance":1, "crime":2, "western":3}
 mapIndexMovie = {0:"science fiction", 1:"romance", 2:"crime", 3:"western"}
 
+### AUTOVALORES Y AUTOVECTORES
 def escribir_input_experimento_mp(mat_a_escribir, archivo):
     with open(archivo, 'w') as f:
         f.write(str(len(mat_a_escribir)) + "\n")
@@ -108,6 +109,8 @@ def calular_autovalores(nombre_archivo, output_name, experimento):
 def separarAutoData(resultado):
     return np.array(resultado[0][0]), np.array(resultado[0][1])
 
+### MATRICES AUXILIARES
+
 def matriz_covarianza(X):
     return X.T @ X / (X.shape[0] - 1)
 
@@ -124,6 +127,8 @@ def matriz_tokens(Q, dataFrame):
                 X[i, unique_tokens_dict[token]] += 1
 
     return X
+
+### KNN
 
 def dist_coseno(X, Y):
     X_norm = np.linalg.norm(X, axis=1, ord=2, keepdims=True)
@@ -187,6 +192,8 @@ def clasificador_de_genero(Q, k, train_set, test_set):
     # Medimos la performance
     return performance(predictions)
 
+### KNN CROSS VALIDATION
+
 def obtener_particion(df, cant_particiones):
     crimeDataFrame   = df[df["Genre"] == "crime"].reset_index()
     westernDataFrame = df[df["Genre"] == "western"].reset_index()
@@ -244,28 +251,6 @@ def knn_cross_validation(k, cant_partes, dataFrame, Q):
         suma += perf
     
     return suma / len(performance_cross_v)
-    
-def pca_cross_validation(p, cant_partes, dataFrame, Q):
-    lista_particiones = obtener_particion(dataFrame, cant_partes)
-
-    varianzas = []
-    
-    for i in range(cant_partes):
-        lista_train_set = []
-        for j in range(cant_partes):
-            if (i != j):
-                lista_train_set.append(lista_particiones[j])
-    
-        test_set = lista_particiones[i]
-        train_set = pd.concat(lista_train_set, axis=0)        
-
-        varianzas.append(pca(train_set, Q, p))
-
-    suma = 0.0
-    for var in varianzas:
-        suma += var
-    
-    return suma / len(varianzas)
 
 def explorar_parametro_k(cant_partes, dataFrame, Q):
     k_sample = [i for i in range(1,len(dataFrame))]
@@ -283,8 +268,59 @@ def explorar_parametro_k(cant_partes, dataFrame, Q):
 
     return max_k
 
+### PCA CROSS VALIDATION
+
+def pca(dataFrame, Q, p):
+    train_set = dataFrame[dataFrame["split"] == "train"].reset_index()
+    
+    X_train = matriz_tokens(Q, train_set)
+    
+    X_train_centrado = X_train - X_train.mean(0)
+
+    C_train = matriz_covarianza(X_train_centrado)
+
+    # Calcular autovalores
+    escribir_input_mp([C_train],"pca_input.dat")
+    
+    calular_autovalores("pca_input.dat", "pca_output.csv", "0")
+
+    w, V = separarAutoData(leer_output_mp("pca_output.csv"))
+
+    indices = np.argsort(w)[::-1]
+
+    w = w[indices]
+    V = V[:,indices]
+
+    # Cambio de base
+    # Xhat = X_train_centrado @ V
+
+    var_acumulada = np.cumsum(w) / np.sum(w) 
+
+    return var_acumulada[:p]
+
+def pca_cross_validation(p, cant_partes, dataFrame, Q):
+    lista_particiones = obtener_particion(dataFrame, cant_partes)
+
+    varianzas = []
+    
+    for i in range(cant_partes):
+        lista_train_set = []
+        for j in range(cant_partes):
+            if (i != j):
+                lista_train_set.append(lista_particiones[j])
+    
+        train_set = pd.concat(lista_train_set, axis=0)        
+
+        varianzas.append(pca(train_set, Q, p))
+
+    suma = 0.0
+    for var in varianzas:
+        suma += var
+    
+    return suma / len(varianzas)
+
 def explorar_parametro_p(cant_partes, dataFrame, Q):
-    p_sample = [i for i in range(1,len(dataFrame),5)]
+    p_sample = [i for i in range(1,Q,5)]
 
     dataFrame = dataFrame[dataFrame["split"] == "train"].reset_index()
 
@@ -301,7 +337,7 @@ def explorar_parametro_p(cant_partes, dataFrame, Q):
 
     return mejor_p, var_acumulada
 
-# Este es el 3a
+### KNN CON DISTINTOS Q
 def calsificar_con_distinta_cantidad_de_toknes():
     train_set = df[df["split"] == "train"].reset_index()
     test_set  = df[df["split"] == "test"].reset_index()
@@ -310,37 +346,8 @@ def calsificar_con_distinta_cantidad_de_toknes():
     print(clasificador_de_genero(Q=1000, k=5, train_set=train_set,test_set=test_set))
     print(clasificador_de_genero(Q=5000, k=5, train_set=train_set,test_set=test_set))
 
-def pca(dataFrame, Q, p):
-    train_set = dataFrame[dataFrame["split"] == "train"].reset_index()
-    
-    X_train = matriz_tokens(Q, train_set)
-    
-    X_train_centrado = X_train - X_train.mean(0)
-
-    C_train = matriz_covarianza(X_train_centrado)
-
-    # Calcular autovalores
-    escribir_input_mp([C_train],"pca_input.dat")
-    
-    # calular_autovalores("pca_input.dat", "pca_output.csv", "0")
-
-    w, V = separarAutoData(leer_output_mp("pca_output.csv"))
-
-    indices = np.argsort(w)[::-1]
-
-    w = w[indices]
-    V = V[:,indices]
-
-    # Cambio de base
-    # Xhat = X_train_centrado @ V
-
-    var_acumulada = np.cumsum(w) / np.sum(w) 
-
-    return var_acumulada[:p]
-
-
 # Leer datos:                   
 df = pd.read_csv("datos.csv")
 df["GenreID"] = df["Genre"].apply(lambda x: mapMovieIndex[x])
 
-explorar_parametro_p(5,df,500)
+pca(df,500,131)
