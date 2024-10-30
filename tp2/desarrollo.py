@@ -8,6 +8,7 @@ mapMovieIndex = {"science fiction": 0, "romance":1, "crime":2, "western":3}
 mapIndexMovie = {0:"science fiction", 1:"romance", 2:"crime", 3:"western"}
 
 ### AUTOVALORES Y AUTOVECTORES
+
 def escribir_input_experimento_mp(mat_a_escribir, archivo):
     with open(archivo, 'w') as f:
         f.write(str(len(mat_a_escribir)) + "\n")
@@ -230,14 +231,14 @@ def obtener_particion(df, cant_particiones):
 
     return particiones
         
-def knn_cross_validation(k, cant_partes, dataFrame, Q):
-    lista_particiones = obtener_particion(dataFrame, cant_partes)
+def knn_cross_validation(k, folds, dataFrame, Q):
+    lista_particiones = obtener_particion(dataFrame, folds)
 
     performance_cross_v = []
     
-    for i in range(cant_partes):
+    for i in range(folds):
         lista_train_set = []
-        for j in range(cant_partes):
+        for j in range(folds):
             if (i != j):
                 lista_train_set.append(lista_particiones[j])
     
@@ -250,9 +251,9 @@ def knn_cross_validation(k, cant_partes, dataFrame, Q):
     for perf in performance_cross_v:
         suma += perf
     
-    return suma / len(performance_cross_v)
+    return suma / len(performance_cross_v)  
 
-def explorar_parametro_k(cant_partes, dataFrame, Q):
+def explorar_parametro_k(folds, dataFrame, Q):
     k_sample = [i for i in range(1,len(dataFrame))]
 
     dataFrame = dataFrame[dataFrame["split"] == "train"].reset_index()
@@ -261,7 +262,7 @@ def explorar_parametro_k(cant_partes, dataFrame, Q):
     max_perf = 0
 
     for k in k_sample:
-        perf_k = knn_cross_validation(k, cant_partes, dataFrame, Q)
+        perf_k = knn_cross_validation(k, folds, dataFrame, Q)
         if perf_k > max_perf:
             max_k = k
             max_perf = perf_k
@@ -270,7 +271,7 @@ def explorar_parametro_k(cant_partes, dataFrame, Q):
 
 ### PCA CROSS VALIDATION
 
-def pca(dataFrame, Q, p):
+def pca(dataFrame, Q, p, caluclar_autovalores=False):
     train_set = dataFrame[dataFrame["split"] == "train"].reset_index()
     
     X_train = matriz_tokens(Q, train_set)
@@ -280,9 +281,9 @@ def pca(dataFrame, Q, p):
     C_train = matriz_covarianza(X_train_centrado)
 
     # Calcular autovalores
-    escribir_input_mp([C_train],"pca_input.dat")
-    
-    calular_autovalores("pca_input.dat", "pca_output.csv", "0")
+    if caluclar_autovalores:
+        escribir_input_mp([C_train],"pca_input.dat")
+        calular_autovalores("pca_input.dat", "pca_output.csv", "0")
 
     w, V = separarAutoData(leer_output_mp("pca_output.csv"))
 
@@ -292,53 +293,61 @@ def pca(dataFrame, Q, p):
     V = V[:,indices]
 
     # Cambio de base
-    # Xhat = X_train_centrado @ V
+    Xhat = X_train_centrado @ V
 
     var_acumulada = np.cumsum(w) / np.sum(w) 
 
-    return var_acumulada[:p]
+    return Xhat, var_acumulada[:p]
 
-def pca_cross_validation(p, cant_partes, dataFrame, Q):
-    lista_particiones = obtener_particion(dataFrame, cant_partes)
+def pca_cross_validation(p, folds, dataFrame, Q, calcular_autovalores=False):
+    lista_particiones = obtener_particion(dataFrame, folds)
 
     varianzas = []
     
-    for i in range(cant_partes):
+    for i in range(folds):
         lista_train_set = []
-        for j in range(cant_partes):
+        for j in range(folds):
             if (i != j):
                 lista_train_set.append(lista_particiones[j])
     
         train_set = pd.concat(lista_train_set, axis=0)        
+        
+        X, var = pca(train_set, Q, p, calcular_autovalores and i == 0)
 
-        varianzas.append(pca(train_set, Q, p))
+        varianzas.append(var)
 
     suma = 0.0
     for var in varianzas:
         suma += var
-    
-    return suma / len(varianzas)
 
-def explorar_parametro_p(cant_partes, dataFrame, Q):
+    promedio_var = suma / len(varianzas)
+    
+    return X, promedio_var
+
+def explorar_parametro_p(folds, dataFrame, Q):
     p_sample = [i for i in range(1,Q,5)]
 
     dataFrame = dataFrame[dataFrame["split"] == "train"].reset_index()
 
     mejor_p = None
-    var_acumulada = []
+    var = []
 
-    for p in p_sample:
-        var_acumulada = pca_cross_validation(p, cant_partes, dataFrame, Q)
+    while p_low <= p_high:
+        p = (p_low + p_high) // 2
 
-        print(p, var_acumulada[-1])
-        if np.any(var_acumulada >= 0.95):
+        X, var = pca_cross_validation(p, folds, dataFrame, Q, p == -1)
+
+        if var[-1] >= 0.95:
             mejor_p = p
-            break  
+            p_high = p - 1
+        else:
+            p_low = p + 1
 
-    return mejor_p, var_acumulada
+    return mejor_p, var
 
 ### KNN CON DISTINTOS Q
-def calsificar_con_distinta_cantidad_de_toknes():
+
+def clasificar_con_distinta_cantidad_de_tokens():
     train_set = df[df["split"] == "train"].reset_index()
     test_set  = df[df["split"] == "test"].reset_index()
 
@@ -346,8 +355,51 @@ def calsificar_con_distinta_cantidad_de_toknes():
     print(clasificador_de_genero(Q=1000, k=5, train_set=train_set,test_set=test_set))
     print(clasificador_de_genero(Q=5000, k=5, train_set=train_set,test_set=test_set))
 
+### PIPELINE FINAL
+
+def pipeline_final(dataFrame, Q=1000, folds=4):
+    k_sample = [i for i in range(1,Q//2,10)]
+    p_low = 1
+    p_high = Q
+
+    C_entrena = dataFrame[dataFrame["split"] == "train"].reset_index()
+    C_prueba  = dataFrame[dataFrame["split"] == "test"].reset_index()
+
+    mejor_p = -1
+    mejor_k = k_sample[0]
+    exa     = 0
+    ult_act = 0
+
+    while p_low <= p_high:
+        p = (p_low + p_high) // 2
+
+        print("p: " + str(p))
+
+        X, var = pca_cross_validation(p, folds, C_entrena, Q, p == -1)
+
+        if var[-1] >= 0.95:
+            mejor_p = p
+            p_high = p - 1
+        else:
+            p_low = p + 1
+
+    for k in k_sample:
+        if k - ult_act > 100: break
+        print("k: " + str(k))
+        exa_k = knn_cross_validation(k, folds, C_entrena, Q)
+        if exa_k > exa:
+            ult_act = k
+            mejor_k = k
+            mejor_p = p
+            exa = exa_k
+            print(exa)
+
+    print("mejor valor!!! ",exa)
+
+    return mejor_p, mejor_k
+
 # Leer datos:                   
 df = pd.read_csv("datos.csv")
 df["GenreID"] = df["Genre"].apply(lambda x: mapMovieIndex[x])
 
-pca(df,500,131)
+print(pipeline_final(df))
