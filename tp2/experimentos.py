@@ -35,6 +35,37 @@ def plot_error_metodo_potencia(resultados, epsilons):
     plt.savefig('graficos/grafico_error_metodo_potencia.png')
     plt.show()
 
+def plot_performance_Q_k():
+    df = ds.leer_data_frame()
+
+    train_set = df[df["split"] == "train"].reset_index()
+    test_set  = df[df["split"] == "test"].reset_index()
+
+    Q_sample = [500,1000,5000]
+    k_sample = [i for i in range(1,len(train_set))]
+    performance_Q = []
+
+    for Q in Q_sample:
+        print(Q)
+        performance = []
+        for k in k_sample:
+            print(k)
+            performance.append(ds.clasificador_de_genero(Q=Q,k=k,train_set=train_set, test_set=test_set, dataFrame=df))
+        performance_Q.append(performance)
+
+    for q in range(len(Q_sample)):
+        plt.plot(k_sample, performance_Q[q], label=f'$Q = {{{Q_sample[q]}}}$')
+
+    plt.ylabel('Performance')
+    plt.xlabel('$\k$')
+    # plt.xscale("log")
+    plt.legend()
+    plt.grid(True)
+    plt.title("Performance para distntos Q")
+    plt.savefig('graficos/grafico_performance_Q.png')
+    plt.show()
+    
+
 def matriz_householder(w):
     D = np.diag(w)
 
@@ -48,7 +79,7 @@ def matriz_householder(w):
 
     return H @ D @ H.T
 
-if __name__ == "__main__":
+def experimentar_epsilon():
     archivoEntrada = 'exper_input_mp.dat'
     archivoSalida  = 'exper_output_mp.csv' 
 
@@ -72,3 +103,8 @@ if __name__ == "__main__":
     
     plot_convergencia(resultados_mp, epsilons)
     plot_error_metodo_potencia(resultados_mp, epsilons)
+
+
+if __name__ == "__main__":
+#    experimentar_epsilon()
+    plot_performance_Q_k()
