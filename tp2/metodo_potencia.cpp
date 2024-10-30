@@ -61,7 +61,7 @@ autoData metodo_potencia(MatrixXd& A, int niter, double eps) {
     return autoData(l, v, i, err);
 }
 
-vector<autoData> obtener_autovalores(MatrixXd& A, int niter=10e3, double eps=10e-4) { //TODO acordarse de cambiar la cantidad de iteraciones y el eps
+vector<autoData> obtener_autovalores(MatrixXd& A, int niter=10e2, double eps=10e-6) { //TODO acordarse de cambiar la cantidad de iteraciones y el eps
     MatrixXd B = A;
     vector<autoData> result;
 
@@ -69,7 +69,7 @@ vector<autoData> obtener_autovalores(MatrixXd& A, int niter=10e3, double eps=10e
         autoData res = metodo_potencia(B, niter, eps);
         result.push_back(res);
         B = B - (res.l * res.v * res.v.transpose());
-        // cout << "lamda " << i+1 << " en " << res.it << " err: " << res.err << endl;
+        cout << "lamda " << i+1 << " en " << res.it << " err: " << res.err << endl;
     }
     
     return result;
