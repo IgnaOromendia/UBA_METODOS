@@ -71,31 +71,22 @@ def plot_performance_Q_k():
 def plot_varianza_p():
     df = ds.leer_data_frame()
 
-    Q_sample  = [500,1000,5000]
-    p_sample  = [i for i in range(0,901,30)]
+    p_sample  = [i for i in range(0,300,15)]
     varianzas = []
 
-    for Q in Q_sample:
-        X = ds.matriz_tokens(Q, df)
+    X = ds.matriz_tokens(Q=1000, dataFrame=df)
+    train_set = df[df["split"] == "train"]
+    X_train = X[train_set.index]  
 
-        train_set = df[df["split"] == "train"]
-        X_train = X[train_set.index]  
-        
-        print(Q)
-        varianzas_p = []
-        for p in p_sample:
-            print(p)
-            var, V = ds.pca(X_train,'T')
-            varianzas_p.append(var[p])
+    for p in p_sample:
+        print(p)
+        var, V = ds.pca(X_train,'T')
+        varianzas.append(var[p])
 
-        varianzas.append(varianzas_p)
-
-    for q in range(len(Q_sample)):
-        plt.plot(p_sample, varianzas[q], label=f'$Q = {{{Q_sample[q]}}}$')
+    plt.plot(p_sample, varianzas, label=f'$Q = 1000$', color='green')
 
     plt.ylabel('Varianza')
     plt.xlabel('$p$')
-    # plt.xscale("log")
     plt.legend()
     plt.grid(True)
     plt.title("Varianza PCA para distntos Q")
@@ -144,5 +135,5 @@ def experimentar_epsilon():
 
 if __name__ == "__main__":
 #    experimentar_epsilon()
-    plot_performance_Q_k()
+    # plot_performance_Q_k()
     plot_varianza_p()
