@@ -3,9 +3,16 @@ import pandas as pd
 from scipy import stats #type: ignore
 import subprocess as sp
 import csv
+import os
 
 mapMovieIndex = {"science fiction": 0, "romance":1, "crime":2, "western":3}
 mapIndexMovie = {0:"science fiction", 1:"romance", 2:"crime", 3:"western"}
+
+### DATA SET
+def leer_data_frame():
+    df = pd.read_csv("datos.csv")
+    df["GenreID"] = df["Genre"].apply(lambda x: mapMovieIndex[x])
+    return df
 
 ### AUTOVALORES Y AUTOVECTORES
 
@@ -116,7 +123,7 @@ def matriz_covarianza(X):
     return X.T @ X / (X.shape[0] - 1)
 
 def matriz_tokens(Q, dataFrame):
-    tokens = np.hstack(df["tokens"].apply(lambda x: x.split()).values)
+    tokens = np.hstack(dataFrame["tokens"].apply(lambda x: x.split()).values)
 
     unique_tokens = pd.Series(tokens).value_counts().index[:Q].values
     unique_tokens_dict = dict(zip(unique_tokens, range(len(unique_tokens))))
@@ -129,200 +136,141 @@ def matriz_tokens(Q, dataFrame):
 
     return X
 
+def promedio(lista):
+    suma = 0.0
+    for elem in lista:
+        suma += elem
+    
+    return suma / len(lista)  
+
 ### KNN
 
 def dist_coseno(X, Y):
     X_norm = np.linalg.norm(X, axis=1, ord=2, keepdims=True)
     Y_norm = np.linalg.norm(Y, axis=1, ord=2, keepdims=True)
 
-    with np.errstate(divide='ignore', invalid='ignore'):
-        cos_sim = (X @ Y.T) / (X_norm @ Y_norm.T)
-        cos_sim = np.nan_to_num(cos_sim, nan=0.0, posinf=0.0, neginf=0.0)
+    Xn = X / X_norm
+    Yn = Y / Y_norm
 
-    return 1 - cos_sim
+    return 1 - Xn @ Yn.T
 
-def knn(i, k, D, trainMap):
+def knn(k, distancias, generos_train):
     # Obtenemos los k vecinos más cercanos
-    cercanos = np.argsort(D[i])[:k]
-
+    cercanos = np.argsort(distancias, axis=0)[:k]
+    
     # Ubicamos los id de género que elegimos
-    ids = df.iloc[trainMap[cercanos]]["GenreID"].values
+    generos = generos_train[cercanos]
 
     # Devolvemos la moda de los géneros
-    return mapIndexMovie[stats.mode(ids, keepdims=True).mode[0]]
+    return stats.mode(generos, keepdims=True).mode[0]
 
-def clasificar(k, D, testMap, trainMap):
-    predict = {}
+def clasificar(k, X_train, X_test, generos_train):
+    D = dist_coseno(X_train, X_test)
+    return knn(k, D, generos_train)
 
-    # Guardamos un mapeo (indice original del df, predicción)
-    for t in range(D.shape[0]):
-        predict[testMap[t]] = knn(t, k, D, trainMap)
-
-    return predict
-
-def performance(predictions):
+def performance(predicciones, generos_test):
     acertados = 0
     
     # Contabilizamos los hits
-    for i, predict in predictions.items():
-        if df["Genre"][i] == predict:
+    for i, predict in enumerate(predicciones):
+        if generos_test[i] == predict:
             acertados += 1
 
     # Sacamos el promedio
-    return acertados / len(predictions)
+    return acertados / len(predicciones)
 
-def clasificador_de_genero(Q, k, train_set, test_set):
+def clasificador_de_genero(Q, k, X, train_set, test_set):
     # Guardamos un mapeo para cada data set
-    mapeoIndicesTrainSet = train_set["index"].to_numpy()
-    mapeoIndicesTestSet  = test_set["index"].to_numpy()
-
-    # print(train_set)
+    generos_train = train_set["GenreID"].to_numpy()
+    generos_test  = test_set["GenreID"].to_numpy()
 
     # Genermaos la matriz de tokens para ambos sets
-    X_train = matriz_tokens(Q, train_set)
-    X_test  = matriz_tokens(Q, test_set)    
-
-    # print(X_train)
-
-    # Calulamos las distancias entre el trainning set y el testing set
-    D = dist_coseno(X_test, X_train)
+    X_train = X[train_set.index]
+    X_test  = X[test_set.index]
 
     # Clasificamos
-    predictions = clasificar(k, D, mapeoIndicesTestSet, mapeoIndicesTrainSet)
+    predicciones = clasificar(k, X_train, X_test, generos_train)
 
     # Medimos la performance
-    return performance(predictions)
+    return performance(predicciones, generos_test)
 
 ### KNN CROSS VALIDATION
+    
+def knn_cross_validation(k, Q, folds, dataFrame, X):
+    dataFrame["Partition"] = [i % folds for i in range(len(df))]
 
-def obtener_particion(df, cant_particiones):
-    crimeDataFrame   = df[df["Genre"] == "crime"].reset_index()
-    westernDataFrame = df[df["Genre"] == "western"].reset_index()
-    romanceDataFrame = df[df["Genre"] == "romance"].reset_index()
-    scienceDataFrame = df[df["Genre"] == "science fiction"].reset_index()
-
-    zippedFrame = list(zip(crimeDataFrame.iterrows(), westernDataFrame.iterrows(), romanceDataFrame.iterrows(), scienceDataFrame.iterrows()))
-
-    particiones = []
-
-    tam_particion = len(crimeDataFrame) // cant_particiones
-
-    for _ in range(cant_particiones):
-        particion_t = []
-
-        for _ in  range(tam_particion):
-            (_, crime_row), (_, western_row), (_, romance_row), (_, science_row) = zippedFrame.pop(0)
-            science_row['nuevo_idx'] = len(particion_t) 
-            particion_t.append(science_row)
-            
-            romance_row['nuevo_idx'] = len(particion_t)
-            particion_t.append(romance_row)
-            
-            crime_row['nuevo_idx'] = len(particion_t)
-            particion_t.append(crime_row)
-            
-            western_row['nuevo_idx'] = len(particion_t)
-            particion_t.append(western_row)
-
-        subsetDF = pd.DataFrame(particion_t)
-        subsetDF.set_index('nuevo_idx', inplace=True)
-
-        particiones.append(subsetDF)
-
-    return particiones
-        
-def knn_cross_validation(k, folds, dataFrame, Q):
-    lista_particiones = obtener_particion(dataFrame, folds)
-
-    performance_cross_v = []
+    performances = []
     
     for i in range(folds):
-        lista_train_set = []
-        for j in range(folds):
-            if (i != j):
-                lista_train_set.append(lista_particiones[j])
-    
-        test_set = lista_particiones[i]
-        train_set = pd.concat(lista_train_set, axis=0)        
+        test_set  = dataFrame[dataFrame["Partition"] == i]
+        train_set = dataFrame[dataFrame["Partition"] != i]
 
-        performance_cross_v.append(clasificador_de_genero(Q, k, train_set, test_set))
+        performances.append(clasificador_de_genero(Q, k, X, train_set, test_set))
 
-    suma = 0.0
-    for perf in performance_cross_v:
-        suma += perf
-    
-    return suma / len(performance_cross_v)  
+    return promedio(performances) 
 
-def explorar_parametro_k(folds, dataFrame, Q):
-    k_sample = [i for i in range(1,len(dataFrame))]
+def explorar_parametro_k(Q, folds, dataFrame):
+    X = matriz_tokens(Q, dataFrame)
 
-    dataFrame = dataFrame[dataFrame["split"] == "train"].reset_index()
+    dataFrame[dataFrame["split"] == "train"]
 
-    max_k = k_sample[0]
+    max_k = 1
     max_perf = 0
+    ult_act = 0
 
-    for k in k_sample:
-        perf_k = knn_cross_validation(k, folds, dataFrame, Q)
+    for k in range(1,100):
+
+        perf_k = knn_cross_validation(k, Q, folds, dataFrame, X)
+
+        if abs(ult_act - k) > 25: break
+
         if perf_k > max_perf:
+            ult_act = k;
             max_k = k
             max_perf = perf_k
 
-    return max_k
+    return max_k, max_perf
 
 ### PCA CROSS VALIDATION
 
-def pca(dataFrame, Q, p, caluclar_autovalores=False):
-    train_set = dataFrame[dataFrame["split"] == "train"].reset_index()
-    
-    X_train = matriz_tokens(Q, train_set)
-    
-    X_train_centrado = X_train - X_train.mean(0)
+def pca(X, fold):
+    X_centrado = X- X.mean(0)
 
-    C_train = matriz_covarianza(X_train_centrado)
+    C_train = matriz_covarianza(X_centrado)
 
     # Calcular autovalores
-    if caluclar_autovalores:
-        escribir_input_mp([C_train],"pca_input.dat")
-        calular_autovalores("pca_input.dat", "pca_output.csv", "0")
+    output_file = "pca_output_" + str(fold) + ".csv"
 
-    w, V = separarAutoData(leer_output_mp("pca_output.csv"))
+    if not os.path.exists(output_file) or os.stat(output_file).st_size == 0:
+        input_file = "pca_input.dat"
+        escribir_input_mp([C_train],input_file)
+        calular_autovalores(input_file, output_file, "0")
+
+    w, V = separarAutoData(leer_output_mp(output_file))
 
     indices = np.argsort(w)[::-1]
 
     w = w[indices]
     V = V[:,indices]
 
-    # Cambio de base
-    Xhat = X_train_centrado @ V
+    #var_acumulada = np.cumsum(w) / np.sum(w)  esto aca no va mas
 
-    var_acumulada = np.cumsum(w) / np.sum(w) 
+    return V
 
-    return Xhat, var_acumulada[:p]
-
-def pca_cross_validation(p, folds, dataFrame, Q, calcular_autovalores=False):
-    lista_particiones = obtener_particion(dataFrame, folds)
+def pca_cross_validation(p, Q, folds, dataFrame, X):
+    dataFrame["Partition"] = [i % folds for i in range(len(df))]
 
     varianzas = []
     
     for i in range(folds):
-        lista_train_set = []
-        for j in range(folds):
-            if (i != j):
-                lista_train_set.append(lista_particiones[j])
-    
-        train_set = pd.concat(lista_train_set, axis=0)        
+        test_set  = dataFrame[dataFrame["Partition"] == i]
+        train_set = dataFrame[dataFrame["Partition"] != i]     
         
-        X, var = pca(train_set, Q, p, calcular_autovalores and i == 0)
+        X, var = pca(X, i)
 
         varianzas.append(var)
 
-    suma = 0.0
-    for var in varianzas:
-        suma += var
-
-    promedio_var = suma / len(varianzas)
-    
-    return X, promedio_var
+    return promedio
 
 def explorar_parametro_p(folds, dataFrame, Q):
     p_sample = [i for i in range(1,Q,5)]
@@ -335,7 +283,7 @@ def explorar_parametro_p(folds, dataFrame, Q):
     while p_low <= p_high:
         p = (p_low + p_high) // 2
 
-        X, var = pca_cross_validation(p, folds, dataFrame, Q, p == -1)
+        X, var = pca_cross_validation(p, folds, dataFrame, Q, p == -1) # p == 1
 
         if var[-1] >= 0.95:
             mejor_p = p
@@ -345,61 +293,70 @@ def explorar_parametro_p(folds, dataFrame, Q):
 
     return mejor_p, var
 
-### KNN CON DISTINTOS Q
-
-def clasificar_con_distinta_cantidad_de_tokens():
-    train_set = df[df["split"] == "train"].reset_index()
-    test_set  = df[df["split"] == "test"].reset_index()
-
-    print(clasificador_de_genero(Q=500, k=5, train_set=train_set,test_set=test_set))
-    print(clasificador_de_genero(Q=1000, k=5, train_set=train_set,test_set=test_set))
-    print(clasificador_de_genero(Q=5000, k=5, train_set=train_set,test_set=test_set))
 
 ### PIPELINE FINAL
 
 def pipeline_final(dataFrame, Q=1000, folds=4):
-    k_sample = [i for i in range(1,Q//2,10)]
-    p_low = 1
-    p_high = Q
+    X = matriz_tokens(Q, dataFrame)
 
-    C_entrena = dataFrame[dataFrame["split"] == "train"].reset_index()
-    C_prueba  = dataFrame[dataFrame["split"] == "test"].reset_index()
+    dataFrame[dataFrame["split"] == "train"]
 
-    mejor_p = -1
-    mejor_k = k_sample[0]
-    exa     = 0
-    ult_act = 0
+    dataFrame["Partition"] = [i % folds for i in range(len(df))]
 
-    while p_low <= p_high:
-        p = (p_low + p_high) // 2
+    p_sample = [i for i in range(80, 120)] 
+    k_sample = [i for i in range(1, 100)] 
 
-        print("p: " + str(p))
+    resultados = np.zeros((Q,Q))
 
-        X, var = pca_cross_validation(p, folds, C_entrena, Q, p == -1)
+    # Folds
+    for i in range(folds):
+        test_set  = dataFrame[dataFrame["Partition"] == i]
+        train_set = dataFrame[dataFrame["Partition"] != i]
 
-        if var[-1] >= 0.95:
-            mejor_p = p
-            p_high = p - 1
-        else:
-            p_low = p + 1
+        generos_train = train_set["GenreID"].to_numpy()
+        generos_test  = test_set["GenreID"].to_numpy()
 
-    for k in k_sample:
-        if k - ult_act > 100: break
-        print("k: " + str(k))
-        exa_k = knn_cross_validation(k, folds, C_entrena, Q)
-        if exa_k > exa:
-            ult_act = k
-            mejor_k = k
-            mejor_p = p
-            exa = exa_k
-            print(exa)
+        # Generamos matriz de tokens
+        X_train = X[train_set.index]
+        X_test  = X[test_set.index]
+        
+        # PCA
+        V = pca(X_train, i)
 
-    print("mejor valor!!! ",exa)
+        print("fold: " + str(i+1))
 
-    return mejor_p, mejor_k
+        for p in p_sample:
+            # Cambiamos de base para las p componentes principales
+            X_train_hat = X_train @ V[:, :p]
+            X_test_hat = X_test @ V[:, :p]
 
-# Leer datos:                   
-df = pd.read_csv("datos.csv")
-df["GenreID"] = df["Genre"].apply(lambda x: mapMovieIndex[x])
+            max_k = 0
+            for k in k_sample:
+                predicciones = clasificar(k, X_train_hat, X_test_hat, generos_train)
 
-print(pipeline_final(df))
+                exa_k = performance(predicciones, generos_test)
+
+                max_k = max(max_k, exa_k)
+
+                resultados[p, k] += exa_k
+            
+            print("p: " + str(p) + " -> " + str(max_k))
+    
+    resultados = resultados / folds
+
+    idx = np.unravel_index(np.argmax(resultados), resultados.shape)
+    return idx, resultados[idx]
+
+# print(pipeline_final(leer_data_frame()))
+
+df = leer_data_frame()
+
+print(explorar_parametro_k(1000, 4, df))
+
+# print(pipeline_final(leer_data_frame(), 1000))
+
+# X = matriz_tokens(1000, df)
+# train_set = df[df["split"] == "train"]
+# test_set  = df[df["split"] == "test"]
+
+# print(clasificador_de_genero(1000, 20, X, train_set, test_set))
