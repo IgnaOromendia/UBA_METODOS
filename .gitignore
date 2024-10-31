@@ -7,3 +7,4 @@ ejec*
 /tp2/__pycache__
 tp2/pca_output.csv
 tp2/pca_input.dat
+pca_output*
