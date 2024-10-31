@@ -170,9 +170,9 @@ def experimentar_epsilon():
     plot_convergencia(resultados_mp, epsilons)
     plot_error_metodo_potencia(resultados_mp, epsilons)
 
-
 if __name__ == "__main__":
-#    experimentar_epsilon()
-    # plot_performance_Q_k()
-    # plot_varianza_p()
+    print("Experimentando...")
+    experimentar_epsilon()
+    plot_performance_Q_k()
+    plot_varianza_p()
     plot_explorar_k()
