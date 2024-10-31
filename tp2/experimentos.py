@@ -53,19 +53,53 @@ def plot_performance_Q_k():
         performance = []
         for k in k_sample:
             print(k)
-            performance.append(ds.clasificador_de_genero(Q, k, X, train_set, test_set))
+            performance.append(ds.clasificador_de_genero(k, X, train_set, test_set))
         performance_Q.append(performance)
 
     for q in range(len(Q_sample)):
         plt.plot(k_sample, performance_Q[q], label=f'$Q = {{{Q_sample[q]}}}$')
 
     plt.ylabel('Performance')
-    plt.xlabel('$\k$')
+    plt.xlabel('$k$')
     # plt.xscale("log")
     plt.legend()
     plt.grid(True)
     plt.title("Performance para distntos Q")
     plt.savefig('graficos/grafico_performance_Q.png')
+    plt.show()
+    
+def plot_varianza_p():
+    df = ds.leer_data_frame()
+
+    Q_sample  = [500,1000,5000]
+    p_sample  = [i for i in range(0,901,30)]
+    varianzas = []
+
+    for Q in Q_sample:
+        X = ds.matriz_tokens(Q, df)
+
+        train_set = df[df["split"] == "train"]
+        X_train = X[train_set.index]  
+        
+        print(Q)
+        varianzas_p = []
+        for p in p_sample:
+            print(p)
+            var, V = ds.pca(X_train,'T')
+            varianzas_p.append(var[p])
+
+        varianzas.append(varianzas_p)
+
+    for q in range(len(Q_sample)):
+        plt.plot(p_sample, varianzas[q], label=f'$Q = {{{Q_sample[q]}}}$')
+
+    plt.ylabel('Varianza')
+    plt.xlabel('$p$')
+    # plt.xscale("log")
+    plt.legend()
+    plt.grid(True)
+    plt.title("Varianza PCA para distntos Q")
+    plt.savefig('graficos/grafico_varianzas_Q.png')
     plt.show()
     
 
@@ -111,3 +145,4 @@ def experimentar_epsilon():
 if __name__ == "__main__":
 #    experimentar_epsilon()
     plot_performance_Q_k()
+    plot_varianza_p()
