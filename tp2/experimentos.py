@@ -38,19 +38,22 @@ def plot_error_metodo_potencia(resultados, epsilons):
 def plot_performance_Q_k():
     df = ds.leer_data_frame()
 
-    train_set = df[df["split"] == "train"].reset_index()
-    test_set  = df[df["split"] == "test"].reset_index()
-
     Q_sample = [500,1000,5000]
-    k_sample = [i for i in range(1,len(train_set))]
     performance_Q = []
 
     for Q in Q_sample:
+        X = ds.matriz_tokens(Q, df)
+
+        train_set = df[df["split"] == "train"]
+        test_set  = df[df["split"] == "test"]
+
+        k_sample = [i for i in range(1,len(train_set))]
+
         print(Q)
         performance = []
         for k in k_sample:
             print(k)
-            performance.append(ds.clasificador_de_genero(Q=Q,k=k,train_set=train_set, test_set=test_set, dataFrame=df))
+            performance.append(ds.clasificador_de_genero(Q, k, X, train_set, test_set))
         performance_Q.append(performance)
 
     for q in range(len(Q_sample)):
