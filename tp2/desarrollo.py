@@ -179,7 +179,7 @@ def performance(predicciones, generos_test):
     # Sacamos el promedio
     return acertados / len(predicciones)
 
-def clasificador_de_genero(Q, k, X, train_set, test_set):
+def clasificador_de_genero( k, X, train_set, test_set):
     # Guardamos un mapeo para cada data set
     generos_train = train_set["GenreID"].to_numpy()
     generos_test  = test_set["GenreID"].to_numpy()
@@ -231,16 +231,17 @@ def explorar_parametro_k(Q, folds, dataFrame):
 
     return max_k, max_perf
 
-### PCA CROSS VALIDATION
+### PCA
 
-def pca(X, fold):
-    X_centrado = X- X.mean(0)
+def pca(X, id_matriz):
+    X_centrado = X - X.mean(0)
 
     C_train = matriz_covarianza(X_centrado)
 
     # Calcular autovalores
-    output_file = "pca_output_" + str(fold) + ".csv"
+    output_file = "pca_output_" + str(id_matriz) + ".csv"
 
+    # En caso de que ya esten calculados no los vuelva a calcular
     if not os.path.exists(output_file) or os.stat(output_file).st_size == 0:
         input_file = "pca_input.dat"
         escribir_input_mp([C_train],input_file)
@@ -253,39 +254,39 @@ def pca(X, fold):
     w = w[indices]
     V = V[:,indices]
 
-    #var_acumulada = np.cumsum(w) / np.sum(w)  esto aca no va mas
+    var = np.cumsum(w) / np.sum(w)
 
-    return V
+    return var, V
 
-def pca_cross_validation(p, Q, folds, dataFrame, X):
+### PCA CROSS VALIDATION
+
+def pca_cross_validation(p, X, folds, dataFrame):
     dataFrame["Partition"] = [i % folds for i in range(len(df))]
 
     varianzas = []
     
     for i in range(folds):
-        test_set  = dataFrame[dataFrame["Partition"] == i]
-        train_set = dataFrame[dataFrame["Partition"] != i]     
-        
-        X, var = pca(X, i)
-
+        train_set   = dataFrame[dataFrame["Partition"] != i]  
+        X_train     = X[train_set.index]   
+        var, V      = pca(p, X_train, i)
         varianzas.append(var)
 
     return promedio
 
 def explorar_parametro_p(folds, dataFrame, Q):
-    p_sample = [i for i in range(1,Q,5)]
+    X = matriz_tokens(Q, dataFrame)
 
-    dataFrame = dataFrame[dataFrame["split"] == "train"].reset_index()
+    dataFrame[dataFrame["split"] == "train"]
 
     mejor_p = None
-    var = []
+    var = 0
 
     while p_low <= p_high:
         p = (p_low + p_high) // 2
 
-        X, var = pca_cross_validation(p, folds, dataFrame, Q, p == -1) # p == 1
+        var, V = pca_cross_validation(p, X, folds, dataFrame)
 
-        if var[-1] >= 0.95:
+        if var >= 0.95:
             mejor_p = p
             p_high = p - 1
         else:
@@ -293,48 +294,43 @@ def explorar_parametro_p(folds, dataFrame, Q):
 
     return mejor_p, var
 
-
 ### PIPELINE FINAL
 
-def pipeline_final(dataFrame, Q=1000, folds=4):
-    X = matriz_tokens(Q, dataFrame)
+def mejores_parametros(dataFrame, Q, X, folds):
+    train_df = dataFrame[dataFrame["split"] == "train"].copy()
 
-    dataFrame[dataFrame["split"] == "train"]
-
-    dataFrame["Partition"] = [i % folds for i in range(len(df))]
-
-    p_sample = [i for i in range(80, 120)] 
-    k_sample = [i for i in range(1, 100)] 
+    train_df["Partition"] = [i % folds for i in range(len(train_df))]
 
     resultados = np.zeros((Q,Q))
 
     # Folds
     for i in range(folds):
-        test_set  = dataFrame[dataFrame["Partition"] == i]
-        train_set = dataFrame[dataFrame["Partition"] != i]
+        desarrollo_set  = train_df[train_df["Partition"] == i]
+        train_set       = train_df[train_df["Partition"] != i]
 
-        generos_train = train_set["GenreID"].to_numpy()
-        generos_test  = test_set["GenreID"].to_numpy()
+        generos_train       = train_set["GenreID"].to_numpy()
+        generos_desarrollo  = desarrollo_set["GenreID"].to_numpy()
 
-        # Generamos matriz de tokens
-        X_train = X[train_set.index]
-        X_test  = X[test_set.index]
+        X_train       = X[train_set.index]
+        X_desarrollo  = X[desarrollo_set.index]
         
         # PCA
-        V = pca(X_train, i)
+        var, V = pca(X_train, i)
 
         print("fold: " + str(i+1))
 
-        for p in p_sample:
+        for p in range(80, 400):
             # Cambiamos de base para las p componentes principales
-            X_train_hat = X_train @ V[:, :p]
-            X_test_hat = X_test @ V[:, :p]
+            X_train_hat      = X_train @ V[:, :p]
+            X_desarrollo_hat = X_desarrollo @ V[:, :p]
+
+            if var[p] < 0.95: continue
 
             max_k = 0
-            for k in k_sample:
-                predicciones = clasificar(k, X_train_hat, X_test_hat, generos_train)
+            for k in range(1, train_df.shape[0]):
+                predicciones = clasificar(k, X_train_hat, X_desarrollo_hat, generos_train)
 
-                exa_k = performance(predicciones, generos_test)
+                exa_k = performance(predicciones, generos_desarrollo)
 
                 max_k = max(max_k, exa_k)
 
@@ -344,16 +340,40 @@ def pipeline_final(dataFrame, Q=1000, folds=4):
     
     resultados = resultados / folds
 
-    idx = np.unravel_index(np.argmax(resultados), resultados.shape)
-    return idx, resultados[idx]
+    p, k = np.unravel_index(np.argmax(resultados), resultados.shape)
+
+    return p, k
+
+def pipeline_final(dataFrame, Q=1000, folds=4):
+    X = matriz_tokens(Q, dataFrame)
+
+    p, k = mejores_parametros(dataFrame, Q, X, folds)
+
+    test_set  = dataFrame[dataFrame["split"] == "test"]
+    train_set = dataFrame[dataFrame["split"] == "train"]
+
+    generos_train = train_set["GenreID"].to_numpy()
+    generos_test  = test_set["GenreID"].to_numpy()
+
+    X_train = X[train_set.index]
+    X_test  = X[test_set.index]
+        
+    var, V = pca(X_train, 'T')
+
+    X_train_hat = X_train @ V[:,:p]
+    X_test_hat  = X_test @ V[:,:p]
+
+    predicciones = clasificar(k, X_train_hat, X_test_hat, generos_train)
+    
+    return performance(predicciones, generos_test)
 
 # print(pipeline_final(leer_data_frame()))
 
 df = leer_data_frame()
 
-print(explorar_parametro_k(1000, 4, df))
+# print(explorar_parametro_k(1000, 4, df))
 
-# print(pipeline_final(leer_data_frame(), 1000))
+print(pipeline_final(leer_data_frame()))
 
 # X = matriz_tokens(1000, df)
 # train_set = df[df["split"] == "train"]
