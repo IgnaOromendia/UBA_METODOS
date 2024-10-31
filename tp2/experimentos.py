@@ -83,7 +83,7 @@ def plot_varianza_p():
         var, V = ds.pca(X_train,'T')
         varianzas.append(var[p])
 
-    plt.plot(p_sample, varianzas, label=f'$Q = 1000$', color='green')
+    plt.plot(p_sample, varianzas, label=f'$Q = 1000$', color='green', marker='o')
 
     plt.ylabel('Varianza')
     plt.xlabel('$p$')
@@ -92,13 +92,51 @@ def plot_varianza_p():
     plt.title("Varianza PCA para distntos Q")
     plt.savefig('graficos/grafico_varianzas_Q.png')
     plt.show()
-    
+
+def plot_explorar_k():
+    df = ds.leer_data_frame()
+
+    Q_sample = [i for i in range(500,9001,500)]
+    mejores_k = []
+    performances =  []
+
+    for Q in Q_sample:
+        print(Q)
+        X = ds.matriz_tokens(Q, df)
+        k, perf = ds.explorar_parametro_k(X, folds=4, dataFrame=df)
+        mejores_k.append(k)
+        performances.append(perf)
+
+    print(mejores_k)
+    print(performances)
+
+    # Creación de la figura y subplots
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6), gridspec_kw={'width_ratios': [1, 1]})
+
+    # Gráfico de mejores_k vs Q_sample
+    axs[0].plot(Q_sample, mejores_k, marker='o', color='b')
+    axs[0].set_title("$K^*$ para cada Q")
+    axs[0].set_xlabel("$Q$")
+    axs[0].set_ylabel("$K^*$")
+    axs[0].grid(True)
+
+    # Gráfico de performances vs Q_sample
+    axs[1].plot(Q_sample, performances, marker='o', color='r')
+    axs[1].set_title("Performance de $K^*$ para cada Q")
+    axs[1].set_xlabel("$Q$")
+    axs[1].set_ylabel("Performance")
+    axs[1].grid(True)
+
+    plt.savefig('graficos/grafico_mejor_k_con_perf.png')
+
+    plt.tight_layout()
+    plt.show()
 
 def matriz_householder(w):
     D = np.diag(w)
 
-    # Preguntar rango del random
     v = np.random.uniform(-1, 1, size=(D.shape[0],1))
+
     v = v / np.linalg.norm(v)
 
     v = v / np.linalg.norm(v)
@@ -136,4 +174,5 @@ def experimentar_epsilon():
 if __name__ == "__main__":
 #    experimentar_epsilon()
     # plot_performance_Q_k()
-    plot_varianza_p()
+    # plot_varianza_p()
+    plot_explorar_k()
