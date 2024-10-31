@@ -179,7 +179,7 @@ def performance(predicciones, generos_test):
     # Sacamos el promedio
     return acertados / len(predicciones)
 
-def clasificador_de_genero( k, X, train_set, test_set):
+def clasificador_de_genero(k, X, train_set, test_set):
     # Guardamos un mapeo para cada data set
     generos_train = train_set["GenreID"].to_numpy()
     generos_test  = test_set["GenreID"].to_numpy()
@@ -196,8 +196,8 @@ def clasificador_de_genero( k, X, train_set, test_set):
 
 ### KNN CROSS VALIDATION
     
-def knn_cross_validation(k, Q, folds, dataFrame, X):
-    dataFrame["Partition"] = [i % folds for i in range(len(df))]
+def knn_cross_validation(k, X, folds, dataFrame):
+    dataFrame["Partition"] = [i % folds for i in range(len(dataFrame))]
 
     performances = []
     
@@ -205,27 +205,23 @@ def knn_cross_validation(k, Q, folds, dataFrame, X):
         test_set  = dataFrame[dataFrame["Partition"] == i]
         train_set = dataFrame[dataFrame["Partition"] != i]
 
-        performances.append(clasificador_de_genero(Q, k, X, train_set, test_set))
+        performances.append(clasificador_de_genero(k, X, train_set, test_set))
 
     return promedio(performances) 
 
-def explorar_parametro_k(Q, folds, dataFrame):
-    X = matriz_tokens(Q, dataFrame)
-
-    dataFrame[dataFrame["split"] == "train"]
-
+def explorar_parametro_k(X, folds, dataFrame):
     max_k = 1
     max_perf = 0
     ult_act = 0
 
-    for k in range(1,100):
+    for k in range(1, dataFrame.shape[0]):
 
-        perf_k = knn_cross_validation(k, Q, folds, dataFrame, X)
+        perf_k = knn_cross_validation(k, X, folds, dataFrame)
 
-        if abs(ult_act - k) > 25: break
+        if abs(ult_act - k) > 100: break
 
         if perf_k > max_perf:
-            ult_act = k;
+            ult_act = k
             max_k = k
             max_perf = perf_k
 
@@ -258,42 +254,6 @@ def pca(X, id_matriz):
 
     return var, V
 
-### PCA CROSS VALIDATION
-
-def pca_cross_validation(p, X, folds, dataFrame):
-    dataFrame["Partition"] = [i % folds for i in range(len(df))]
-
-    varianzas = []
-    
-    for i in range(folds):
-        train_set   = dataFrame[dataFrame["Partition"] != i]  
-        X_train     = X[train_set.index]   
-        var, V      = pca(p, X_train, i)
-        varianzas.append(var)
-
-    return promedio
-
-def explorar_parametro_p(folds, dataFrame, Q):
-    X = matriz_tokens(Q, dataFrame)
-
-    dataFrame[dataFrame["split"] == "train"]
-
-    mejor_p = None
-    var = 0
-
-    while p_low <= p_high:
-        p = (p_low + p_high) // 2
-
-        var, V = pca_cross_validation(p, X, folds, dataFrame)
-
-        if var >= 0.95:
-            mejor_p = p
-            p_high = p - 1
-        else:
-            p_low = p + 1
-
-    return mejor_p, var
-
 ### PIPELINE FINAL
 
 def mejores_parametros(dataFrame, Q, X, folds):
@@ -319,24 +279,30 @@ def mejores_parametros(dataFrame, Q, X, folds):
 
         print("fold: " + str(i+1))
 
-        for p in range(80, 400):
+        for p in range(1, X_train.shape[0]):
             # Cambiamos de base para las p componentes principales
             X_train_hat      = X_train @ V[:, :p]
             X_desarrollo_hat = X_desarrollo @ V[:, :p]
 
             if var[p] < 0.95: continue
-
+            
+            ult_act = 0
             max_k = 0
+
             for k in range(1, train_df.shape[0]):
                 predicciones = clasificar(k, X_train_hat, X_desarrollo_hat, generos_train)
 
                 exa_k = performance(predicciones, generos_desarrollo)
 
-                max_k = max(max_k, exa_k)
+                if abs(ult_act - k) > 100: break
+
+                if max_k < exa_k:
+                    max_k = exa_k
+                    ult_act = k
 
                 resultados[p, k] += exa_k
             
-            print("p: " + str(p) + " -> " + str(max_k))
+            # print("p: " + str(p) + " -> k:" + str(ult_act) + " " + str(max_k))
     
     resultados = resultados / folds
 
@@ -365,18 +331,6 @@ def pipeline_final(dataFrame, Q=1000, folds=4):
 
     predicciones = clasificar(k, X_train_hat, X_test_hat, generos_train)
     
+    print("Mejor p: ", p)
+    print("Mejor k:", k)
     return performance(predicciones, generos_test)
-
-# print(pipeline_final(leer_data_frame()))
-
-df = leer_data_frame()
-
-# print(explorar_parametro_k(1000, 4, df))
-
-print(pipeline_final(leer_data_frame()))
-
-# X = matriz_tokens(1000, df)
-# train_set = df[df["split"] == "train"]
-# test_set  = df[df["split"] == "test"]
-
-# print(clasificador_de_genero(1000, 20, X, train_set, test_set))
