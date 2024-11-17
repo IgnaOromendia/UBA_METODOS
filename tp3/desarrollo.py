@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy as sc
 
 def leer_datos(nombreArchivo, sujeto):
@@ -43,7 +42,7 @@ def cuadrados_minimos_reg(X,y,l):
 
     return V @ S @ inv @ U.T @ y
 
-def predecir_legrande(sujeto=1):
+def predecir_legrande(sujeto):
     x_aju, y_aju = leer_datos('./datos/ajuste.txt', sujeto)
     x_val, y_val = leer_datos('./datos/validacion.txt', sujeto)
 
@@ -67,15 +66,7 @@ def predecir_legrande(sujeto=1):
         err_ajuste.append(ecm_ajuste)
         err_val.append(ecm_val)
 
-    plt.figure()
-    plt.plot(err_ajuste,'.-', label='Ajuste')
-    plt.plot(err_val,'.-', label='Val')
-    plt.legend()
-    plt.yscale('log')
-    plt.xlabel('Grado')
-    plt.ylabel('Error')
-    plt.title('ECM')
-    plt.show()
+    return grados, err_ajuste, err_val
 
 def predecir_reg(sujeto):
     x_aju, y_aju = leer_datos('./datos/ajuste.txt', sujeto)
@@ -108,24 +99,7 @@ def predecir_reg(sujeto):
     
     return g_opt, l_opt, err_val_por_l, grados, lambdas
 
-def explorar_hiperparams():
-    fig, axs = plt.subplots(2, 3)
-    axs = axs.flatten()
 
-    for sujeto in range(1,5):
-        g_opt, l_opt, errs, grados, lambdas = predecir_reg(sujeto)
-
-        color = axs[sujeto].pcolor(errs, cmap='hot')
-        plt.colorbar(color, ax=axs[sujeto], label='u')
-
-        axs[sujeto].set_title(f'Error para sujeto nº' + str(sujeto))
-        axs[sujeto].set_xlabel('$\lambda$')
-        axs[sujeto].set_ylabel('Grado')
-
-    plt.tight_layout()
-    plt.show()
-
-explorar_hiperparams()
 
 
 
