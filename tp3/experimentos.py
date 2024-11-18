@@ -28,7 +28,7 @@ def explorar_en_sujeto(sujeto):
     x_val, y_val = ds.leer_datos('./datos/validacion.txt', sujeto)
 
     max_g = 2*x_aju.shape[0]
-    max_l = 50
+    max_l = 200
 
     lambdas = [i for i in range(1, max_l)]
     grados  = [i for i in range(1, max_g)]
