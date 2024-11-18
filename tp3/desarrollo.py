@@ -13,36 +13,33 @@ def leer_datos(nombreArchivo, sujeto):
     x = np.array(valores_x)
     y = np.array(valores_y)
 
-    x.reshape(1,x.shape[0])
-    y.reshape(1,y.shape[0])
+    # x.reshape(1,x.shape[0])
+    # y.reshape(1,y.shape[0])
 
     return (x, y)
 
-def SVD(A):
-    return np.linalg.svd(A)
-
 def cuadrados_minimos(X, y):
-    U, S, V = SVD(X)
+    U, S, V = np.linalg.svd(X)
 
     S_inv = np.diag(1 / np.diag(S))
 
     return V @ S_inv @ U.T @ y
 
 def cuadrados_minimos_reg(X,y,l):
-    U, S, V = SVD(X)
+    U, Svec, V = np.linalg.svd(X)
 
+    m = U.shape[0]
     n = V.shape[0]
 
-    S = np.diag(S)
+    S = np.zeros((m,n))
 
-    inv = np.linalg.inv(S@S + l * np.identity(n))
+    for i in range(len(Svec)): S[i,i] = Svec[i]
 
-    print(U.shape)
-    print(y.shape)
+    inv = np.linalg.inv(S@S.T + l * np.identity(m))
 
-    return V @ S @ inv @ U.T @ y
+    return V @ S.T @ inv @ U.T @ y
 
-def predecir_legrande(sujeto):
+def predecir_sin_reg(sujeto):
     x_aju, y_aju = leer_datos('./datos/ajuste.txt', sujeto)
     x_val, y_val = leer_datos('./datos/validacion.txt', sujeto)
 
@@ -68,36 +65,15 @@ def predecir_legrande(sujeto):
 
     return grados, err_ajuste, err_val
 
-def predecir_reg(sujeto):
-    x_aju, y_aju = leer_datos('./datos/ajuste.txt', sujeto)
-    x_val, y_val = leer_datos('./datos/validacion.txt', sujeto)
+def predecir_con_reg(x_aju, y_aju, x_val, y_val, g, l):
+    X_aju = np.polynomial.legendre.legvander(x_aju, g)
+    X_val = np.polynomial.legendre.legvander(x_val, g)
 
-    grados  = [i for i in range(1, 2*x_aju.shape[0])]
-    lambdas = [i for i in range(1, 50)]
+    beta_pred = cuadrados_minimos_reg(X_aju, y_aju, l)
 
-    g_opt = -1
-    l_opt = 1
-    err_val_por_l = []
-    min_err = 1e8
+    y_val_pred = (beta_pred.T@X_val.T).T
 
-    for g in grados:
-        err_val = []
-
-        for l in lambdas:
-            beta_pred = cuadrados_minimos_reg(x_aju, y_aju, l)
-            y_val_pred = (beta_pred.T@x_val.T).T
-
-            ecm_val = np.sum((y_val_pred-y_val)**2)
-            err_val.append(ecm_val)
-
-            if min_err > ecm_val:
-                g_opt = g
-                l_opt = l
-                min_err = ecm_val
-
-        err_val_por_l.append(err_val)
-    
-    return g_opt, l_opt, err_val_por_l, grados, lambdas
+    return np.sum((y_val_pred-y_val)**2)
 
 
 
