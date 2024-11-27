@@ -154,19 +154,17 @@ def dist_coseno(X, Y):
 
     return 1 - Xn @ Yn.T
 
-def knn(k, distancias, generos_train):
+def knn(k, X_train, X_test, generos_train):
+    D = dist_coseno(X_train, X_test)
+
     # Obtenemos los k vecinos más cercanos
-    cercanos = np.argsort(distancias, axis=0)[:k]
+    cercanos = np.argsort(D, axis=0)[:k]
     
     # Ubicamos los id de género que elegimos
     generos = generos_train[cercanos]
 
     # Devolvemos la moda de los géneros
     return stats.mode(generos, keepdims=True).mode[0]
-
-def clasificar(k, X_train, X_test, generos_train):
-    D = dist_coseno(X_train, X_test)
-    return knn(k, D, generos_train)
 
 def performance(predicciones, generos_test):
     acertados = 0
@@ -189,7 +187,7 @@ def clasificador_de_genero(k, X, train_set, test_set):
     X_test  = X[test_set.index]
 
     # Clasificamos
-    predicciones = clasificar(k, X_train, X_test, generos_train)
+    predicciones = knn(k, X_train, X_test, generos_train)
 
     # Medimos la performance
     return performance(predicciones, generos_test)
@@ -290,7 +288,7 @@ def mejores_parametros(dataFrame, Q, X, folds):
             max_k = 0
 
             for k in range(1, train_df.shape[0]):
-                predicciones = clasificar(k, X_train_hat, X_desarrollo_hat, generos_train)
+                predicciones = knn(k, X_train_hat, X_desarrollo_hat, generos_train)
 
                 exa_k = performance(predicciones, generos_desarrollo)
 
@@ -329,7 +327,7 @@ def pipeline_final(dataFrame, Q=1000, folds=4):
     X_train_hat = X_train @ V[:,:p]
     X_test_hat  = X_test @ V[:,:p]
 
-    predicciones = clasificar(k, X_train_hat, X_test_hat, generos_train)
+    predicciones = knn(k, X_train_hat, X_test_hat, generos_train)
     
     print("Mejor p: ", p)
     print("Mejor k:", k)
