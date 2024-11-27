@@ -9,6 +9,7 @@ def plot_error_sujeto_1():
     plt.plot(grados, err_ajuste,'.-', label='Ajuste')
     plt.plot(grados, err_val,'.-', label='Val')
     plt.legend()
+    plt.grid(True)
     plt.yscale('log')
     plt.xlabel('Grado')
     plt.ylabel('Error')
@@ -16,18 +17,17 @@ def plot_error_sujeto_1():
     plt.savefig('graficos/grafico_error_sujeto1.png')
     plt.show()
 
-def heatmap_sujetos(error, sujeto, ax):
-    lambdas = np.logspace(1e-8,1, 100)
-    lambda_range = range(1,len(lambdas),10)
+def heatmap_sujetos(error, sujeto, ax, cant_lambdas=100):
+    lambda_range = range(0,cant_lambdas,10)
 
     cax = ax.pcolor(error, cmap='hot', shading='auto') 
     plt.colorbar(cax, ax=ax, label='Error')
 
-    ax.set_xticks(np.arange(1,len(lambdas),10) + 0.5)
-    ax.set_xticklabels([f'$\lambda_{{{i+1}}}$' for i in lambda_range], ha='right')
+    ax.set_yticks(np.arange(0,cant_lambdas,10) + 0.5)
+    ax.set_yticklabels([f'$\lambda_{{{i}}}$' for i in lambda_range], ha='right')
 
     ax.set_title(f'Mapa de Calor del error del sujeto nº {sujeto}')
-    ax.set_ylabel('Grado')
+    ax.set_xlabel('Grado')
 
 def explorar_en_sujeto(sujeto):
     x_aju, y_aju = ds.leer_datos('./datos/ajuste.txt', sujeto)
@@ -41,14 +41,14 @@ def explorar_en_sujeto(sujeto):
 
     g_opt = -1
     l_opt = -1
-    error = [[0] * cant_l for _ in range(max_g)]
+    error = [[0] * max_g for _ in range(cant_l)]
     min_err = 1e8
 
     for g in grados:
         for i,l in enumerate(lambdas):
-            error[g][i] = ds.predecir_con_reg(x_aju, y_aju, x_val, y_val, g, l)
-            if error[g][i] < min_err:
-                min_err = error[g][i]
+            error[i][g] = ds.predecir_con_reg(x_aju, y_aju, x_val, y_val, g, l)
+            if error[i][g] < min_err:
+                min_err = error[i][g]
                 g_opt = g
                 l_opt = l
 
