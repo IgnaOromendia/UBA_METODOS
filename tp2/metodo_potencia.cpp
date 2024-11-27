@@ -40,7 +40,7 @@ double calcular_desvio(vector<double>& v, double promedio) {
 
 autoData metodo_potencia(MatrixXd& A, int niter, double eps) {
     double l = 1;   
-    VectorXd v(A.rows()); v.setConstant(-1);
+    VectorXd v(A.rows()); v.setRandom();
     VectorXd w = v;
     int i = 0;
 
@@ -61,7 +61,7 @@ autoData metodo_potencia(MatrixXd& A, int niter, double eps) {
     return autoData(l, v, i, err);
 }
 
-vector<autoData> obtener_autovalores(MatrixXd& A, int niter=10e5, double eps=10e-7) {
+vector<autoData> obtener_autovalores(MatrixXd& A, int niter=10e8, double eps=10e-7) {
     MatrixXd B = A;
     vector<autoData> result;
 

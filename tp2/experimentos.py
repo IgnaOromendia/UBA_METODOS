@@ -3,11 +3,16 @@ import numpy as np
 import desarrollo as ds
 
 def plot_convergencia(resultados, epsilons):
-    cant_lambdas = len(resultados[0][0])
+    for l in range(len(resultados[0][0])):
+        iteracones_l_promedio = []
+        iteracones_l_desvio = []
 
-    for i in range(cant_lambdas):
-        plt.errorbar(epsilons, resultados[i][2], yerr=resultados[i][3], label=f'$\lambda_{{{i+1}}}$')
-        plt.scatter(epsilons, resultados[i][2])
+        for e in range(len(epsilons)):
+            iteracones_l_promedio.append(resultados[e][2][l])
+            iteracones_l_desvio.append(resultados[e][3][l])
+
+        plt.errorbar(epsilons, iteracones_l_promedio, yerr=iteracones_l_desvio, label=f'$\lambda_{{{l+1}}}$')
+        plt.scatter(epsilons, iteracones_l_promedio)
 
     plt.ylabel('Iteraciones')
     plt.xlabel('$\epsilon$')
@@ -20,11 +25,16 @@ def plot_convergencia(resultados, epsilons):
     plt.show()
 
 def plot_error_metodo_potencia(resultados, epsilons):
-    cant_lambdas = len(resultados[0][0])
+    for l in range(len(resultados[0][0])):
+        error_l_promedio = []
+        error_l_desvio = []
 
-    for i in range(cant_lambdas):
-        plt.errorbar(epsilons, resultados[i][4], yerr=resultados[i][5], label=f'$\lambda_{{{i+1}}}$')
-        plt.scatter(epsilons, resultados[i][4])
+        for e in range(len(epsilons)):
+            error_l_promedio.append(resultados[e][4][l])
+            error_l_desvio.append(resultados[e][5][l])
+
+        plt.errorbar(epsilons, error_l_promedio, yerr=error_l_desvio, label=f'$\lambda_{{{l+1}}}$')
+        plt.scatter(epsilons, error_l_promedio)
 
     plt.ylabel('Error')
     plt.xlabel('$\epsilon$')
@@ -147,7 +157,7 @@ def experimentar_epsilon():
     archivoEntrada = 'exper_input_mp.dat'
     archivoSalida  = 'exper_output_mp.csv' 
 
-    epsilons = np.logspace(-4, 0,num=5)
+    epsilons = np.logspace(-4, 0,num=20)
     matrices_a_escribir = []
 
     matrices_por_eps = 100
