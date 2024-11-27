@@ -90,7 +90,7 @@ def plot_varianza_p():
     plt.legend()
     plt.grid(True)
     plt.title("Varianza PCA")
-    plt.savefig('graficos/grafico_varianzas_Q.png')
+    plt.savefig('graficos/grafico_varianza_pca.png')
     plt.show()
 
 def plot_explorar_k():
