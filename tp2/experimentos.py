@@ -12,7 +12,7 @@ def plot_convergencia(resultados, epsilons):
     plt.ylabel('Iteraciones')
     plt.xlabel('$\epsilon$')
     plt.xscale("log")
-    # plt.yscale("log")
+    plt.yscale("log")
     plt.legend()
     plt.grid(True)
     plt.title("Iteraciones de cada $\lambda$ en el método de la potencia")
@@ -89,7 +89,7 @@ def plot_varianza_p():
     plt.xlabel('$p$')
     plt.legend()
     plt.grid(True)
-    plt.title("Varianza PCA para distntos Q")
+    plt.title("Varianza PCA")
     plt.savefig('graficos/grafico_varianzas_Q.png')
     plt.show()
 
@@ -139,8 +139,6 @@ def matriz_householder(w):
 
     v = v / np.linalg.norm(v)
 
-    v = v / np.linalg.norm(v)
-
     H = np.eye(D.shape[0]) - 2 * (v @ v.T)
 
     return H @ D @ H.T
@@ -152,13 +150,15 @@ def experimentar_epsilon():
     epsilons = np.logspace(-4, 0,num=5)
     matrices_a_escribir = []
 
-    matrices_por_eps = 5
+    matrices_por_eps = 500
 
     for eps in epsilons:
         v = [10, 10 - eps, 5, 2, 1]
         matrices_para_eps = []
+
         for _ in range(matrices_por_eps):
             matrices_para_eps.append(matriz_householder(v))
+
         matrices_a_escribir.append(matrices_para_eps)
 
     ds.escribir_input_experimento_mp(matrices_a_escribir, archivoEntrada)
@@ -173,6 +173,6 @@ def experimentar_epsilon():
 if __name__ == "__main__":
     print("Experimentando...")
     experimentar_epsilon()
-    plot_performance_Q_k()
-    plot_varianza_p()
-    plot_explorar_k()
+    # plot_performance_Q_k()
+    # plot_varianza_p()
+    # plot_explorar_k()
