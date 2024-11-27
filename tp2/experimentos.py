@@ -150,7 +150,7 @@ def experimentar_epsilon():
     epsilons = np.logspace(-4, 0,num=5)
     matrices_a_escribir = []
 
-    matrices_por_eps = 500
+    matrices_por_eps = 100
 
     for eps in epsilons:
         v = [10, 10 - eps, 5, 2, 1]
