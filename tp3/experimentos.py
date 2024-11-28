@@ -85,5 +85,5 @@ def explorar_hiperparametros():
 
 if __name__ == "__main__":
     print("Experimentando...")
-    # plot_error_sujeto_1()
-    # explorar_hiperparametros()
+    plot_error_sujeto_1()
+    explorar_hiperparametros()
