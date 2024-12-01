@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import stats #type: ignore
+import multiprocessing as mp
 import subprocess as sp
 import csv
 import os
@@ -254,54 +255,63 @@ def pca(X, id_matriz):
 
 ### PIPELINE FINAL
 
+def fold_cross_validation(i, Q, X, train_df):
+    resultados = np.zeros((Q,Q))
+
+    desarrollo_set  = train_df[train_df["Partition"] == i]
+    train_set       = train_df[train_df["Partition"] != i]
+
+    generos_train       = train_set["GenreID"].to_numpy()
+    generos_desarrollo  = desarrollo_set["GenreID"].to_numpy()
+
+    X_train       = X[train_set.index]
+    X_desarrollo  = X[desarrollo_set.index]
+
+    var, V = pca(X_train, i)
+
+    print("Comienza fold: " + str(i+1))
+
+    for p in range(1, X_train.shape[0]):
+        # Cambiamos de base para las p componentes principales
+        X_train_hat      = X_train @ V[:, :p]
+        X_desarrollo_hat = X_desarrollo @ V[:, :p]
+
+        if var[p] < 0.95: continue
+        
+        ult_act = 0
+        max_k = 0
+
+        for k in range(1, train_df.shape[0]):
+            predicciones = knn(k, X_train_hat, X_desarrollo_hat, generos_train)
+
+            exa_k = performance(predicciones, generos_desarrollo)
+
+            if abs(ult_act - k) > 100: break
+
+            if max_k < exa_k:
+                max_k = exa_k
+                ult_act = k
+
+            resultados[p, k] = exa_k
+
+    print("Termina fold: " + str(i+1), exa_k)
+
+    return resultados
+
 def mejores_parametros(dataFrame, Q, X, folds):
     train_df = dataFrame[dataFrame["split"] == "train"].copy()
-
     train_df["Partition"] = [i % folds for i in range(len(train_df))]
+
+    params = [(i, Q, X, train_df) for i in range(folds)]
+
+    with mp.Pool(processes=folds) as pool:
+        resultadosMP = pool.starmap(fold_cross_validation, params)
 
     resultados = np.zeros((Q,Q))
 
-    # Folds
-    for i in range(folds):
-        desarrollo_set  = train_df[train_df["Partition"] == i]
-        train_set       = train_df[train_df["Partition"] != i]
+    for exaMat in resultadosMP:
+        resultados += exaMat
 
-        generos_train       = train_set["GenreID"].to_numpy()
-        generos_desarrollo  = desarrollo_set["GenreID"].to_numpy()
-
-        X_train       = X[train_set.index]
-        X_desarrollo  = X[desarrollo_set.index]
-        
-        # PCA
-        var, V = pca(X_train, i)
-
-        print("fold: " + str(i+1))
-
-        for p in range(1, X_train.shape[0]):
-            # Cambiamos de base para las p componentes principales
-            X_train_hat      = X_train @ V[:, :p]
-            X_desarrollo_hat = X_desarrollo @ V[:, :p]
-
-            if var[p] < 0.95: continue
-            
-            ult_act = 0
-            max_k = 0
-
-            for k in range(1, train_df.shape[0]):
-                predicciones = knn(k, X_train_hat, X_desarrollo_hat, generos_train)
-
-                exa_k = performance(predicciones, generos_desarrollo)
-
-                if abs(ult_act - k) > 100: break
-
-                if max_k < exa_k:
-                    max_k = exa_k
-                    ult_act = k
-
-                resultados[p, k] += exa_k
-            
-            # print("p: " + str(p) + " -> k:" + str(ult_act) + " " + str(max_k))
-    
     resultados = resultados / folds
 
     p, k = np.unravel_index(np.argmax(resultados), resultados.shape)

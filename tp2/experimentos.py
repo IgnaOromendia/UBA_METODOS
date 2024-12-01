@@ -182,7 +182,9 @@ def experimentar_epsilon():
 
 if __name__ == "__main__":
     print("Experimentando...")
-    experimentar_epsilon()
+    # experimentar_epsilon()
     # plot_performance_Q_k()
     # plot_varianza_p()
     # plot_explorar_k()
+    perf = ds.pipeline_final(ds.leer_data_frame())
+    print(perf)
