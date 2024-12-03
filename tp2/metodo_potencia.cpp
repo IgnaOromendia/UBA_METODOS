@@ -113,7 +113,7 @@ vector<MatrixXd> leer_input(string nombre_archivo) {
 void procesar_matrices(vector<MatrixXd>& matrices, vector<vector<autoData>>& results) {
     // Por cada matriz a procesar vamos caluclar los autovalores y autovectores
     for(int i = 0; i < matrices.size(); i++) 
-        results.push_back(obtener_autovalores(matrices[i], 10e6, 10e-6));   
+        results.push_back(obtener_autovalores(matrices[i], 10e4, 10e-4));   
 }
 
 void escribir_output(vector<vector<autoData>>& res, string nombre_archivo) {
