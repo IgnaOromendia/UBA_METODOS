@@ -150,10 +150,10 @@ def dist_coseno(X, Y):
     X_norm = np.linalg.norm(X, axis=1, ord=2, keepdims=True)
     Y_norm = np.linalg.norm(Y, axis=1, ord=2, keepdims=True)
 
-    Xn = X / X_norm
-    Yn = Y / Y_norm
+    # Xn = X / X_norm
+    # Yn = Y / Y_norm
 
-    return 1 - Xn @ Yn.T
+    return 1 - X @ Y.T
 
 def knn(k, X_train, X_test, generos_train):
     D = dist_coseno(X_train, X_test)
