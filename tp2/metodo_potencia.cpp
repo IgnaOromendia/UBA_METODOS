@@ -75,9 +75,10 @@ vector<autoData> obtener_autovalores(MatrixXd& A, int niter=10e8, double eps=10e
     return result;
 }
 
-void escribir_vector(ofstream& f, VectorXd& vec) {
-    for (int i = 0; i < vec.size(); ++i) 
-        f << vec(i) << ", ";
+void procesar_matrices(vector<MatrixXd>& matrices, vector<vector<autoData>>& results) {
+    // Por cada matriz a procesar vamos caluclar los autovalores y autovectores
+    for(int i = 0; i < matrices.size(); i++) 
+        results.push_back(obtener_autovalores(matrices[i], 10e4, 10e-4));   
 }
 
 // Calculo de autovalores
@@ -110,10 +111,9 @@ vector<MatrixXd> leer_input(string nombre_archivo) {
     return result;
 }
 
-void procesar_matrices(vector<MatrixXd>& matrices, vector<vector<autoData>>& results) {
-    // Por cada matriz a procesar vamos caluclar los autovalores y autovectores
-    for(int i = 0; i < matrices.size(); i++) 
-        results.push_back(obtener_autovalores(matrices[i], 10e4, 10e-4));   
+void escribir_vector(ofstream& f, VectorXd& vec) {
+    for (int i = 0; i < vec.size(); ++i) 
+        f << vec(i) << ", ";
 }
 
 void escribir_output(vector<vector<autoData>>& res, string nombre_archivo) {
