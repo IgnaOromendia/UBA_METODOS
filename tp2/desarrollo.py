@@ -229,9 +229,7 @@ def explorar_parametro_k(X, folds, dataFrame):
 ### PCA
 
 def pca(X, id_matriz):
-    X_centrado = X - X.mean(0)
-
-    C_train = matriz_covarianza(X_centrado)
+    C_train = matriz_covarianza(X)
 
     # Calcular autovalores
     output_file = "pca_output_" + str(id_matriz) + ".csv"
@@ -256,8 +254,6 @@ def pca(X, id_matriz):
 ### PIPELINE FINAL
 
 def fold_cross_validation(i, Q, X, train_df):
-    resultados = np.zeros((Q,Q))
-
     desarrollo_set  = train_df[train_df["Partition"] == i]
     train_set       = train_df[train_df["Partition"] != i]
 
@@ -267,14 +263,19 @@ def fold_cross_validation(i, Q, X, train_df):
     X_train       = X[train_set.index]
     X_desarrollo  = X[desarrollo_set.index]
 
-    var, V = pca(X_train, i)
+    X_train_c = X_train - X_train.mean(0)
+    X_desarrollo_c = X_desarrollo - X_train.mean(0)
+
+    var, V = pca(X_train_c, i)
 
     print("Comienza fold: " + str(i+1))
 
+    resultados = np.zeros((Q,Q))
+
     for p in range(1, X_train.shape[0]):
         # Cambiamos de base para las p componentes principales
-        X_train_hat      = X_train @ V[:, :p]
-        X_desarrollo_hat = X_desarrollo @ V[:, :p]
+        X_train_hat      = X_train_c @ V[:, :p]
+        X_desarrollo_hat = X_desarrollo_c @ V[:, :p]
 
         if var[p] < 0.95: continue
         
@@ -331,11 +332,14 @@ def pipeline_final(dataFrame, Q=1000, folds=4):
 
     X_train = X[train_set.index]
     X_test  = X[test_set.index]
-        
-    var, V = pca(X_train, 'T')
 
-    X_train_hat = X_train @ V[:,:p]
-    X_test_hat  = X_test @ V[:,:p]
+    X_train_c = X_train - X_train.mean(0)
+    X_test_c = X_test - X_train.mean(0)
+        
+    var, V = pca(X_train_c, 'T')
+
+    X_train_hat = X_train_c @ V[:,:p]
+    X_test_hat  = X_test_c @ V[:,:p]
 
     predicciones = knn(k, X_train_hat, X_test_hat, generos_train)
     
