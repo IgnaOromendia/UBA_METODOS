@@ -26,18 +26,21 @@ def cuadrados_minimos(X, y):
     return V @ S_inv @ U.T @ y
 
 def cuadrados_minimos_reg(X,y,l):
-    U, Svec, V = np.linalg.svd(X)
+    U, s, V = np.linalg.svd(X)
 
     m = U.shape[0]
     n = V.shape[0]
 
     S = np.zeros((m,n))
+    for i in range(len(s)): S[i,i] = s[i]
 
-    for i in range(len(Svec)): S[i,i] = Svec[i]
+    A = np.zeros((n,min(n,m)))
 
-    inv = np.linalg.inv(S@S.T + l * np.identity(m))
-
-    return V @ S.T @ inv @ U.T @ y
+    for i in range(min(n,m)): A[i,i] = S[i,i] / (S[i,i]**2 + l)
+    
+    U = U[:,:n]
+    
+    return V @ A @ U.T @ y
 
 def predecir_sin_reg(sujeto):
     x_aju, y_aju = leer_datos('./datos/ajuste.txt', sujeto)
