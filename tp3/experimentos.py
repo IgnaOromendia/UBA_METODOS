@@ -18,13 +18,13 @@ def plot_error_sujeto_1():
     plt.show()
 
 def heatmap_sujetos(error, sujeto, ax, cant_lambdas=100):
-    lambda_range = range(0,cant_lambdas,10)
-
     cax = ax.pcolor(error, cmap='hot', shading='auto') 
     plt.colorbar(cax, ax=ax, label='Error')
 
-    ax.set_yticks(np.arange(0,cant_lambdas,10) + 0.5)
-    ax.set_yticklabels([f'$\lambda_{{{i}}}$' for i in lambda_range], ha='right')
+    y_ticks = [0, 0.25, 0.5, 0.75, 1]
+    y_positions = np.array(y_ticks) * (cant_lambdas - 1) 
+    ax.set_yticks(y_positions + 0.5) 
+    ax.set_yticklabels(y_ticks)
 
     ax.set_title(f'Mapa de Calor del error del sujeto nº {sujeto}')
     ax.set_xlabel('Grado')
@@ -37,7 +37,7 @@ def explorar_en_sujeto(sujeto):
     cant_l = 100
 
     lambdas = np.logspace(1e-8,1, cant_l)
-    grados  = [i for i in range(1, max_g)]
+    grados  = [i for i in range(5, max_g)]
 
     g_opt = -1
     l_opt = -1
@@ -85,5 +85,5 @@ def explorar_hiperparametros():
 
 if __name__ == "__main__":
     print("Experimentando...")
-    plot_error_sujeto_1()
+    # plot_error_sujeto_1()
     explorar_hiperparametros()
