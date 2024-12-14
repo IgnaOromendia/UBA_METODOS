@@ -53,7 +53,7 @@ def explorar_en_sujeto(sujeto):
 
     g_opt = -1
     l_opt = -1
-    error = np.zeros((max_g, cant_l))
+    error = np.ones((cant_l, max_g))
     min_err = 1e8
 
     for g in grados:
