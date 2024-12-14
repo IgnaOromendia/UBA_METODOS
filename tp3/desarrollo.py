@@ -19,17 +19,24 @@ def leer_datos(nombreArchivo, sujeto):
     return (x, y)
 
 def cuadrados_minimos(X, y):
-    U, S, V = np.linalg.svd(X)
+    U, S, Vt = np.linalg.svd(X)
 
-    S_inv = np.diag(1 / np.diag(S))
+    n = Vt.shape[0]
+    m = U.shape[0]
 
-    return V @ S_inv @ U.T @ y
+    S_inv = np.zeros((n,min(n,m)))
+
+    U = U[:,:n]
+
+    for i in range(min(n,m)): S_inv[i,i] = 1 / S[i]
+
+    return Vt.T @ S_inv @ U.T @ y
 
 def cuadrados_minimos_reg(X,y,l):
-    U, s, V = np.linalg.svd(X)
+    U, s, Vt = np.linalg.svd(X)
 
     m = U.shape[0]
-    n = V.shape[0]
+    n = Vt.shape[0]
 
     S = np.zeros((m,n))
     for i in range(len(s)): S[i,i] = s[i]
@@ -40,43 +47,37 @@ def cuadrados_minimos_reg(X,y,l):
     
     U = U[:,:n]
     
-    return V @ A @ U.T @ y
+    return Vt.T @ A @ U.T @ y
 
-def predecir_sin_reg(sujeto):
-    x_aju, y_aju = leer_datos('./datos/ajuste.txt', sujeto)
-    x_val, y_val = leer_datos('./datos/validacion.txt', sujeto)
+def ecm_sin_regularizacion(x_aju, y_aju, x_val, y_val, grado):
+    X_aju = np.polynomial.legendre.legvander(x_aju, grado)
+    X_val = np.polynomial.legendre.legvander(x_val, grado)
 
-    grados = []
-    err_ajuste = []
-    err_val = []
+    # beta_pred = sc.linalg.lstsq(X_aju,y_aju)[0]
 
-    for i in range(1, 2*x_aju.shape[0]):
-        X_aju = np.polynomial.legendre.legvander(x_aju, i)
-        X_val = np.polynomial.legendre.legvander(x_val, i)
+    beta_pred = cuadrados_minimos(X_aju, y_aju)
 
-        beta_pred = sc.linalg.lstsq(X_aju,y_aju)[0]
+    y_aju_pred = (beta_pred.T@X_aju.T).T
+    y_val_pred = (beta_pred.T@X_val.T).T
 
-        y_aju_pred = (beta_pred.T@X_aju.T).T
-        y_val_pred = (beta_pred.T@X_val.T).T
+    ecm_ajuste = np.sum((y_aju_pred-y_aju)**2)
+    ecm_val = np.sum((y_val_pred-y_val)**2)
 
-        ecm_ajuste = np.sum((y_aju_pred-y_aju)**2)
-        ecm_val = np.sum((y_val_pred-y_val)**2)
+    return ecm_ajuste, ecm_val
 
-        grados.append(i)
-        err_ajuste.append(ecm_ajuste)
-        err_val.append(ecm_val)
-
-    return grados, err_ajuste, err_val
-
-def predecir_con_reg(x_aju, y_aju, x_val, y_val, g, l):
-    X_aju = np.polynomial.legendre.legvander(x_aju, g)
-    X_val = np.polynomial.legendre.legvander(x_val, g)
+def ecm_con_regularizacion(x_aju, y_aju, x_val, y_val, grado, l):
+    X_aju = np.polynomial.legendre.legvander(x_aju, grado)
+    X_val = np.polynomial.legendre.legvander(x_val, grado)
 
     beta_pred = cuadrados_minimos_reg(X_aju, y_aju, l)
 
+    # y_aju_pred = (beta_pred.T@X_aju.T).T
     y_val_pred = (beta_pred.T@X_val.T).T
 
-    return np.sum((y_val_pred-y_val)**2)
+    # ecm_ajuste = np.sum((y_aju_pred-y_aju)**2)
+    ecm_val = np.sum((y_val_pred-y_val)**2)
+
+    return ecm_val
 
 
 
