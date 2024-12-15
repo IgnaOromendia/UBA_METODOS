@@ -53,8 +53,6 @@ def ecm_sin_regularizacion(x_aju, y_aju, x_val, y_val, grado):
     X_aju = np.polynomial.legendre.legvander(x_aju, grado)
     X_val = np.polynomial.legendre.legvander(x_val, grado)
 
-    # beta_pred = sc.linalg.lstsq(X_aju,y_aju)[0]
-
     beta_pred = cuadrados_minimos(X_aju, y_aju)
 
     y_aju_pred = (beta_pred.T@X_aju.T).T
@@ -71,10 +69,8 @@ def ecm_con_regularizacion(x_aju, y_aju, x_val, y_val, grado, l):
 
     beta_pred = cuadrados_minimos_reg(X_aju, y_aju, l)
 
-    # y_aju_pred = (beta_pred.T@X_aju.T).T
     y_val_pred = (beta_pred.T@X_val.T).T
 
-    # ecm_ajuste = np.sum((y_aju_pred-y_aju)**2)
     ecm_val = np.sum((y_val_pred-y_val)**2)
 
     return ecm_val
