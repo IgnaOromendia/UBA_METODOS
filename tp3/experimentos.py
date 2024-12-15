@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import multiprocessing as mp
 import desarrollo as ds
 import numpy as np
@@ -29,13 +30,15 @@ def plot_error_sujeto_1():
     plt.show()
 
 def heatmap_sujetos(error, sujeto, ax, cant_lambdas=100):
-    cax = ax.pcolor(error, cmap='hot', shading='auto') 
+    log_error = np.log10(error)         
+    
+    cax = ax.pcolor(log_error, cmap='hot', shading='auto')
     plt.colorbar(cax, ax=ax, label='Error')
-
+    
     y_ticks = [0, 0.25, 0.5, 0.75, 1]
-    y_positions = np.array(y_ticks) * (cant_lambdas - 1) 
+    y_positions = np.array(y_ticks) * (cant_lambdas - 1)
 
-    ax.set_yticks(y_positions + 0.5) 
+    ax.set_yticks(y_positions + 0.5)
     ax.set_yticklabels(y_ticks)
 
     ax.set_title(f'Mapa de Calor del error del sujeto nº {sujeto}')
@@ -45,7 +48,7 @@ def explorar_en_sujeto(sujeto):
     x_aju, y_aju = ds.leer_datos('./datos/ajuste.txt', sujeto)
     x_val, y_val = ds.leer_datos('./datos/validacion.txt', sujeto)
 
-    max_g = 2*x_aju.shape[0]
+    max_g = 80
     cant_l = 100
 
     lambdas = np.logspace(-8, 1, cant_l)
